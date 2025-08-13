@@ -1,66 +1,92 @@
-# Project Progress
+# Project Progress Report
 
-Date: 2025-08-14
+Last updated: 2025-08-14T01:45:36+06:00
 
-## Backend (NestJS)
+This document tracks implementation progress against `docs/project_plan/design_implementation_plan.md` and provides precise references for an agentic IDE to continue work.
 
-- Auth & Registration
-  - Public customer registration: `POST /api/auth/register`
-  - Login with JWT: `POST /api/auth/login`
-  - Roles: `admin`, `accountant`, `customer` (RBAC in place)
+---
 
-- Bank Accounts
-  - Endpoints (admin/accountant only for now):
-    - Upsert: `POST /api/bank-accounts`
-    - Validate: `POST /api/bank-accounts/validate`
-  - Auto-validation during upsert: IBAN checksum or basic local checks
-  - Status set to `valid` or `invalid` before persisting
+## Phase A — Foundations
 
-- Payouts
-  - Endpoint: `POST /api/payouts/submit` (admin/accountant)
-  - Preconditions: unpaid payment, user exists, validated bank account
-  - Idempotency: returns `already_initiated` if an audit with `initiated` exists
-  - Audit trail: creates `payout_audit` rows for `initiated` and submission outcome
-  - Balance/Budget Gate:
-    - Uses BalanceService to ensure available funds before initiating
-    - Supports Adyen Balance Platform balance fetch when configured
-    - Falls back to `AVAILABLE_PAYOUT_BUDGET` env or unlimited if unset
+- [x] Docker + compose
+  - Added `Dockerfile` for API using Node LTS (`node:22-alpine`) with healthcheck hitting `GET /health`.
+    - File: `Dockerfile`
+  - Added `.dockerignore` to slim image context.
+    - File: `.dockerignore`
+  - Created `docker-compose.yml` with unique, non-consecutive host ports to avoid conflicts.
+    - MySQL: host `52719` -> container `3306`
+    - Redis: host `60941` -> container `6379`
+    - API: host `41873` -> container `3000`
+    - Web: host `56483` -> container `3000`
+    - File: `docker-compose.yml`
+  - Added API health endpoint.
+    - File: `src/app.controller.ts` (method `health()` at route `/health`)
 
-- Webhooks
-  - Endpoint: `POST /api/webhooks/adyen`
-  - HMAC verification using `ADYEN_HMAC_KEY` (hex) against JSON payload
-  - Updates `pay_accounting_payment.paid` on success events and appends to `payout_audit`
+- [x] Config module
+  - Zod-based environment validation wired globally via `@nestjs/config`.
+    - Files: `src/config/env.ts`, `src/app.module.ts`
+    - Dependencies added: `@nestjs/config`, `zod` in `package.json`
 
-- Adyen Integration Abstraction
-  - `AdyenService.submitPayout()` currently a safe stub
-  - Wired into `PayoutsService.submit()` with idempotency and audits (PSP reference placeholder)
+- [~] Monorepo structure
+  - Existing NestJS API at repo root (scripts in `package.json`).
+  - Web app scaffold added under `web/` (see Phase E below).
 
-## Configuration & Environment
+---
 
-- Expected envs (subset):
-  - DB_* for MySQL connection
-  - JWT_SECRET
-  - ADYEN_HMAC_KEY (webhook verification)
-  - AVAILABLE_PAYOUT_BUDGET (fallback for payout gating)
-  - ADYEN_USE_BALANCE_PLATFORM=true (to fetch balance from Adyen)
-  - ADYEN_API_KEY, ADYEN_BALANCE_ACCOUNT_ID, ADYEN_ENV (Balance Platform)
+## Phase E — Frontend (scaffolded)
 
-## Current Decision
+- [x] Next.js + MUI app
+  - New Next.js 15 app with React 18 and MUI 6.
+    - Files:
+      - `web/package.json` (Next 15, React 18, MUI 6)
+      - `web/next.config.mjs` (with `output: 'standalone'`)
+      - `web/tsconfig.json`
+      - `web/app/layout.tsx` (MUI ThemeProvider + CssBaseline)
+      - `web/app/page.tsx` (Home shell with navigation)
+      - `web/app/onboarding/page.tsx` (US ACH onboarding form, client-side validation)
+      - `web/lib/validators.ts` (routing checksum + masking)
+  - Dockerized web app using Node LTS and Next standalone output.
+    - File: `web/Dockerfile`
 
-- Use Adyen for Platforms (Balance Platform) for scalable payouts to many recipients.
+---
 
-## Status Summary
+## Current runtime status
 
-- Core backend flows implemented and building cleanly
-- Bank account auto-validation on save: done
-- Payout initiation with balance/budget check and audits: done
-- Webhook with HMAC: done
-- Balance Platform balance fetch: implemented when envs provided
-- Live payout call: pending (stub in place)
+- [ ] Bring-up command (pending approval)
+  - `docker compose up -d --build`
+  - Expected checks:
+    - API health: `GET http://localhost:41873/health -> {"status":"ok"}`
+    - Web root: `http://localhost:56483/`
+    - `docker compose ps` shows all services healthy
 
-## Notable Security Notes
+- Known local lint/build notes
+  - Local TS lints in `web/` about missing modules are expected until running `npm install` inside `web/`. Docker builds will install dependencies.
 
-- Bank details stored in DB without field-level encryption (to be improved)
-- Owner-only customer endpoints not yet exposed (admin/accountant only for now)
-- Webhook HMAC in place; signature construction is simplified for current payload format
+---
 
+## Files changed in this iteration
+
+- API: `src/app.controller.ts`, `src/app.module.ts`, `src/config/env.ts`
+- Root: `Dockerfile`, `.dockerignore`, `docker-compose.yml`, `package.json`
+- Web: `web/Dockerfile`, `web/package.json`, `web/next.config.mjs`, `web/tsconfig.json`, `web/app/layout.tsx`, `web/app/page.tsx`, `web/app/onboarding/page.tsx`, `web/lib/validators.ts`
+
+---
+
+## Open items / decisions needed
+
+- Stack startup: Approval to run `docker compose up -d --build` to build/pull images and run services.
+- Monorepo tooling: Decide whether to introduce pnpm workspaces now vs. keep npm per-package for initial delivery.
+- API endpoints: Confirm final path casing and auth for provider self-service (Phase D/3: `POST /providers/me/bank-accounts/ach`).
+
+---
+
+## Validation references implemented
+
+- Algorithms documented in `docs/project_plan/design_implementation_plan.md` Section 4.
+- Client-side US routing checksum: `web/lib/validators.ts:isValidUsRouting`.
+
+---
+
+## Next Steps (see checklist)
+
+See `docs/next_steps_checklist.md` for actionable, checkbox-oriented tasks with file targets.
