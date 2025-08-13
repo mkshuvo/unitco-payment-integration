@@ -1,0 +1,79 @@
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:8.4
+    command: ["--default-authentication-plugin=mysql_native_password", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-unitco}
+      MYSQL_USER: ${MYSQL_USER:-unitco}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-unitco}
+    ports:
+      - "52719:3306" # random high port to avoid conflicts
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u$$MYSQL_USER", "-p$$MYSQL_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "60941:6379" # random high port to avoid conflicts
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      # DB connection placeholders (to be wired into Nest config module later)
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: ${MYSQL_USER:-unitco}
+      DB_PASS: ${MYSQL_PASSWORD:-unitco}
+      DB_NAME: ${MYSQL_DATABASE:-unitco}
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "41873:3000" # random high port to avoid conflicts
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:3000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      NEXT_TELEMETRY_DISABLED: 1
+    ports:
+      - "56483:3000" # random high port to avoid conflicts
+    depends_on:
+      api:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:3000/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mysql_data:
