@@ -43,6 +43,7 @@ services:
       DB_PASS: ${MYSQL_PASSWORD:-unitco}
       DB_NAME: ${MYSQL_DATABASE:-unitco}
       REDIS_URL: redis://redis:6379
+      ENCRYPTION_KEY: 5Rq0BvdtCffVuTKoBovPVvPk7ltr+N81Pjx5105xpdE=
     ports:
       - "41873:3000" # random high port to avoid conflicts
     depends_on:

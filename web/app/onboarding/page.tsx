@@ -15,6 +15,7 @@ import {
   Typography,
 } from "@mui/material";
 import { isValidUsRouting, last4Mask } from "@/lib/validators";
+import { addAchBankAccount, BankAccountView } from "@/lib/api";
 
 export default function OnboardingPage() {
   const [holderName, setHolderName] = React.useState("");
@@ -42,9 +43,20 @@ export default function OnboardingPage() {
     setError(null);
     setSubmitting(true);
     try {
-      // TODO: Replace with real API call to NestJS endpoint
-      await new Promise((res) => setTimeout(res, 800));
-      setSuccessMask(last4Mask(accountNumber));
+      const result = await addAchBankAccount({
+        holderName,
+        accountType,
+        routingNumber,
+        accountNumber,
+        address1,
+        address2,
+        city,
+        state,
+        zip,
+        makePrimary,
+      });
+      
+      setSuccessMask(result.mask);
       // Reset sensitive fields
       setAccountNumber("");
       setRoutingNumber("");

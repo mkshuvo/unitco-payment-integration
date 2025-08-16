@@ -1,98 +1,146 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# UnitCo Payment Integration
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A production-grade payouts platform for Field Nation to pay 5,000–10,000 providers every Friday at 10:00 AM CST using Unit's ACH Origination API.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Architecture
 
-## Description
+- **Backend**: NestJS with TypeScript
+- **Frontend**: Next.js 15 + Material UI 6
+- **Database**: MySQL 8.4
+- **Cache/Jobs**: Redis 7 + BullMQ
+- **Payments**: Unit ACH Origination API
+- **Infrastructure**: Docker Compose
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Features
 
-## Project setup
+- ✅ Provider bank account onboarding with validation
+- ✅ Field-level encryption of sensitive data
+- ✅ US ACH routing number validation
+- ✅ International bank support (SWIFT/IBAN)
+- ✅ Unit counterparty creation
+- ✅ Modern React frontend with Material UI
+- 🔄 Batch payout pipeline (in progress)
+- 🔄 Webhook reconciliation (in progress)
 
-```bash
-$ npm install
-```
+## Quick Start
 
-## Compile and run the project
+### Prerequisites
+
+- Docker and Docker Compose
+- Node.js 18+ (for local development)
+
+### 1. Generate Encryption Key
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+node scripts/generate-encryption-key.js
 ```
 
-## Run tests
+Copy the output and add it to your environment or docker-compose.yml.
+
+### 2. Start the Application
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+docker compose up -d --build
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### 3. Verify Installation
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+# Test API health
+curl http://localhost:41873/health
+
+# Test bank API
+node scripts/test-api.js
+
+# Open web interface
+open http://localhost:56483/onboarding
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## API Endpoints
 
-## Resources
+- `GET /health` - Health check
+- `POST /providers/me/bank-accounts/ach` - Add US ACH bank account
+- `GET /providers/me/bank-accounts` - List bank accounts (coming soon)
 
-Check out a few resources that may come in handy when working with NestJS:
+## Development
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+### Local Development
 
-## Support
+```bash
+# Install dependencies
+npm install
+cd web && npm install
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+# Start backend
+npm run start:dev
 
-## Stay in touch
+# Start frontend (in another terminal)
+cd web && npm run dev
+```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### Testing
+
+```bash
+# Unit tests
+npm run test
+
+# E2E tests
+npm run test:e2e
+
+# API tests
+node scripts/test-api.js
+```
+
+## Project Structure
+
+```
+├── src/                    # NestJS backend
+│   ├── bank/              # Bank account management
+│   ├── crypto/            # Encryption utilities
+│   └── config/            # Configuration
+├── web/                   # Next.js frontend
+│   ├── app/               # App router pages
+│   └── lib/               # Utilities and API client
+├── scripts/               # Utility scripts
+└── docs/                  # Documentation
+```
+
+## Security
+
+- Field-level AES-GCM encryption for sensitive bank data
+- Sensitive data redaction in all logs
+- Input validation and sanitization
+- Secure key management (requires ENCRYPTION_KEY)
+
+## Environment Variables
+
+Required environment variables:
+
+```bash
+# Database
+DB_HOST=mysql
+DB_PORT=3306
+DB_USER=unitco
+DB_PASS=unitco
+DB_NAME=unitco
+
+# Redis
+REDIS_URL=redis://redis:6379
+
+# Encryption (generate with scripts/generate-encryption-key.js)
+ENCRYPTION_KEY=base64_encoded_32_byte_key
+
+# Optional
+UNIT_API_KEY=your_unit_api_key
+UNIT_WEBHOOK_SECRET=your_webhook_secret
+JWT_ACCESS_SECRET=your_jwt_secret
+JWT_REFRESH_SECRET=your_jwt_refresh_secret
+```
+
+## Next Steps
+
+See `docs/next_steps_checklist.md` for detailed implementation roadmap.
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+MIT
