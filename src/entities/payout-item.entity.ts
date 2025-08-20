@@ -51,3 +51,4 @@ export class PayoutItem {
   @JoinColumn({ name: 'batch_id' })
   batch: PayoutBatch;
 }
+

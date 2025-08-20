@@ -25,6 +25,7 @@ export default function OnboardingPage() {
     "checking"
   );
   const [address1, setAddress1] = React.useState("");
+  const [address2, setAddress2] = React.useState("");
   const [city, setCity] = React.useState("");
   const [state, setState] = React.useState("");
   const [zip, setZip] = React.useState("");
@@ -135,6 +136,7 @@ export default function OnboardingPage() {
             <FormHelperText>Used for ACH SEC code selection</FormHelperText>
           </FormControl>
           <TextField required label="Address line 1" value={address1} onChange={(e) => setAddress1(e.target.value)} />
+          <TextField label="Address line 2 (optional)" value={address2} onChange={(e) => setAddress2(e.target.value)} />
           <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
             <TextField required label="City" sx={{ flex: 1 }} value={city} onChange={(e) => setCity(e.target.value)} />
             <TextField required label="State" sx={{ width: 120 }} value={state} onChange={(e) => setState(e.target.value.toUpperCase())} />

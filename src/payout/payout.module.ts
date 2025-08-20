@@ -7,10 +7,13 @@ import { PayoutItem } from '../entities/payout-item.entity';
 import { PayoutBatchRepository } from '../repositories/payout-batch.repository';
 import { PayoutItemRepository } from '../repositories/payout-item.repository';
 import { BankAccountRepository } from '../repositories/bank-account.repository';
+import { BankAccount } from '../entities/bank-account.entity';
+import { CryptoModule } from '../crypto/crypto.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([PayoutBatch, PayoutItem]),
+    TypeOrmModule.forFeature([PayoutBatch, PayoutItem, BankAccount]),
+    CryptoModule,
   ],
   controllers: [PayoutController],
   providers: [
@@ -22,3 +25,4 @@ import { BankAccountRepository } from '../repositories/bank-account.repository';
   exports: [PayoutService],
 })
 export class PayoutModule {}
+

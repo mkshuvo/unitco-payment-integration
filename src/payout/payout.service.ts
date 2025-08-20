@@ -61,9 +61,12 @@ export class PayoutService {
     dto: CreatePayoutBatchDto,
     userId: number,
   ): Promise<PayoutBatchView> {
+    const start = new Date(dto.startDate);
+    const end = new Date(dto.endDate);
+
     this.logger.log(`Creating payout batch for user ${userId}`, {
-      startDate: dto.startDate,
-      endDate: dto.endDate,
+      startDate: start,
+      endDate: end,
       idempotencyKey: dto.idempotencyKey,
     });
 
@@ -85,13 +88,13 @@ export class PayoutService {
     }
 
     // Compute payout items
-    const earnings = await this.getMockEarningsForPeriod(dto.startDate, dto.endDate, userId);
+    const earnings = await this.getMockEarningsForPeriod(start, end, userId);
     
     // Create batch
     const batch = await this.payoutBatchRepository.createBatch({
       userId,
-      startDate: dto.startDate,
-      endDate: dto.endDate,
+      startDate: start,
+      endDate: end,
       totalAmount: earnings.reduce((sum, earning) => sum + earning.amount, 0),
       itemCount: earnings.length,
       currency: 'USD',
@@ -180,7 +183,7 @@ export class PayoutService {
   ): Promise<Array<{ amount: number; description: string; referenceId: string }>> {
     // Mock implementation - in real app this would query actual earnings data
     const daysDiff = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-    const mockEarnings = [];
+    const mockEarnings: Array<{ amount: number; description: string; referenceId: string }> = [];
 
     for (let i = 0; i < Math.min(daysDiff, 7); i++) {
       const date = new Date(startDate);
@@ -252,3 +255,4 @@ export class PayoutService {
     };
   }
 }
+

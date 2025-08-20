@@ -17,6 +17,9 @@ export const EnvSchema = z.object({
   // Optional but planned variables
   ENCRYPTION_KEY: z.string().min(0).optional(),
   UNIT_API_KEY: z.string().min(0).optional(),
+  // Unit integration configuration
+  UNIT_BASE_URL: z.string().min(0).optional(),
+  UNIT_STATUS_CHECK_PATH: z.string().min(0).optional(),
   UNIT_WEBHOOK_SECRET: z.string().min(0).optional(),
   JWT_ACCESS_SECRET: z.string().min(0).optional(),
   JWT_REFRESH_SECRET: z.string().min(0).optional(),
@@ -28,7 +31,7 @@ export type Env = z.infer<typeof EnvSchema>;
 export function validateEnv(config: Record<string, unknown>): Env {
   const parsed = EnvSchema.safeParse(config);
   if (!parsed.success) {
-    const message = parsed.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join('; ');
+    const message = parsed.error.issues.map(e => `${e.path.join('.')}: ${e.message}`).join('; ');
     throw new Error(`Invalid environment configuration: ${message}`);
   }
   return parsed.data;

@@ -53,3 +53,4 @@ export class PayoutBatch {
   @OneToMany(() => PayoutItem, item => item.batch)
   items: PayoutItem[];
 }
+

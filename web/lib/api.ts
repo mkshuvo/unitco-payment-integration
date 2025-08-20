@@ -126,3 +126,20 @@ export async function getBankAccounts(): Promise<BankAccountView[]> {
     throw error;
   }
 }
+
+export interface UnitStatusView {
+  status: 'UP' | 'DOWN';
+  checkedAt: string;
+  responseTimeMs: number;
+  target: string;
+  reason?: string;
+}
+
+export async function getIntegrationStatus(): Promise<UnitStatusView> {
+  const url = `/integration/unit/status`;
+  const res = await fetch(url, { cache: 'no-store' });
+  if (!res.ok) {
+    throw new Error(`Status check failed: HTTP ${res.status}`);
+  }
+  return res.json();
+}

@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createCipher, createDecipher, randomBytes } from 'crypto';
+import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
 
 @Injectable()
 export class CryptoService {
   private readonly algorithm = 'aes-256-gcm';
   private readonly keyLength = 32; // 256 bits
-  private readonly ivLength = 16; // 128 bits
+  private readonly ivLength = 12; // 96 bits (recommended for GCM)
   private readonly tagLength = 16; // 128 bits
 
   constructor(private configService: ConfigService) {}
@@ -18,17 +18,16 @@ export class CryptoService {
   async encryptField(plaintext: string): Promise<string> {
     const key = this.getEncryptionKey();
     const iv = randomBytes(this.ivLength);
-    
-    const cipher = createCipher(this.algorithm, key);
-    cipher.setAAD(Buffer.from('field-encryption', 'utf8'));
-    
-    let encrypted = cipher.update(plaintext, 'utf8', 'base64');
-    encrypted += cipher.final('base64');
-    
+    const aad = Buffer.from('field-encryption', 'utf8');
+
+    const cipher = createCipheriv(this.algorithm, key, iv, { authTagLength: this.tagLength });
+    cipher.setAAD(aad);
+
+    const encryptedBuf = Buffer.concat([cipher.update(plaintext, 'utf8'), cipher.final()]);
     const tag = cipher.getAuthTag();
-    
-    // Combine: nonce + tag + ciphertext
-    const combined = Buffer.concat([iv, tag, Buffer.from(encrypted, 'base64')]);
+
+    // Combine: iv + tag + ciphertext
+    const combined = Buffer.concat([iv, tag, encryptedBuf]);
     return combined.toString('base64');
   }
 
@@ -39,20 +38,19 @@ export class CryptoService {
   async decryptField(encryptedData: string): Promise<string> {
     const key = this.getEncryptionKey();
     const combined = Buffer.from(encryptedData, 'base64');
-    
-    // Extract: nonce + tag + ciphertext
+
+    // Extract: iv + tag + ciphertext
     const iv = combined.subarray(0, this.ivLength);
     const tag = combined.subarray(this.ivLength, this.ivLength + this.tagLength);
     const ciphertext = combined.subarray(this.ivLength + this.tagLength);
-    
-    const decipher = createDecipher(this.algorithm, key);
+
+    const aad = Buffer.from('field-encryption', 'utf8');
+    const decipher = createDecipheriv(this.algorithm, key, iv);
     decipher.setAuthTag(tag);
-    decipher.setAAD(Buffer.from('field-encryption', 'utf8'));
-    
-    let decrypted = decipher.update(ciphertext, undefined, 'utf8');
-    decrypted += decipher.final('utf8');
-    
-    return decrypted;
+    decipher.setAAD(aad);
+
+    const decryptedBuf = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
+    return decryptedBuf.toString('utf8');
   }
 
   /**

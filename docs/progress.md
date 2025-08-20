@@ -1,6 +1,6 @@
 # Project Progress Report
 
-Last updated: 2025-08-14T01:45:36+06:00
+Last updated: 2025-08-21T02:05:02+06:00
 
 This document tracks implementation progress against `docs/project_plan/design_implementation_plan.md` and provides precise references for an agentic IDE to continue work.
 
@@ -223,3 +223,31 @@ See `docs/next_steps_checklist.md` for actionable, checkbox-oriented tasks with 
 - Infra: docker-compose.yml changes; package.json adjustments
 - Docs: updated progress log
 
+
+## Progress Update - 2025-08-21 02:05 +06:00
+- Integration (backend): Implemented `UnitService.checkStatus()` using `@unit-finance/unit-node-sdk`, calling `customers.list({ limit: 1 })` with a 5s timeout. Returns `UnitStatusView` with target, timing, and reason. Files: `src/integration/unit.service.ts`, `src/integration/integration.controller.ts`, `src/integration/integration.module.ts`.
+- API Keys (backend): Added encrypted API key management with activation flow.
+  - Entity: `src/entities/api-key.entity.ts`
+  - Service: `src/api-keys/api-keys.service.ts` (AES-GCM encrypt/decrypt, fingerprint, `getActivePlaintext()` for Unit runtime)
+  - Controller: `src/api-keys/api-keys.controller.ts` (CRUD + `POST /api/keys/:id/activate`)
+- Web (frontend): Added `/status` page that calls `GET /integration/unit/status` via Next.js rewrite. Files: `web/app/status/page.tsx`, `web/lib/api.ts`, `web/next.config.mjs` (rewrites `/integration/*` to API in Docker).
+- Infra: `docker-compose.yml`
+  - Use `env_file: ./.env` for API service; removed hardcoded `UNIT_API_KEY` from compose
+  - Keep `UNIT_BASE_URL=https://api.s.unit.sh`, `UNIT_STATUS_CHECK_PATH=/identity`
+  - Ports: API `41873`, Web `56483`
+- Current Status: `http://localhost:56483/status` renders but shows DOWN.
+  - Reason: `Failed to load active API key` from `UnitService.checkStatus()` — no active key could be retrieved/decrypted from DB (by design, runtime loads key from DB, not env var).
+
+How to get status UP
+1) Create an API key in DB (replace <YOUR_UNIT_API_KEY>):
+   curl -sS -X POST http://localhost:41873/api/keys \
+     -H "Content-Type: application/json" \
+     -d '{"name":"Unit Org Token","secret":"<YOUR_UNIT_API_KEY>"}'
+2) Activate it (replace <id> with the id returned above):
+   curl -sS -X POST http://localhost:41873/api/keys/<id>/activate
+3) Refresh status page: http://localhost:56483/status
+
+Notes
+- Preference honored: SDK-based status check with Unit SDK + 5s timeout, no raw HTTP.
+- `.env` may include `UNIT_API_KEY`, but status check intentionally uses DB-managed active key for rotation/auditing.
+- Stack healthy after `make build-up`; API/Web healthchecks pass.

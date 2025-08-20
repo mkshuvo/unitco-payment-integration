@@ -50,7 +50,7 @@ export class BankAccount {
 
   // New Unit-specific columns
   @Column({ type: 'varchar', length: 128, nullable: true, unique: true })
-  unit_counterparty_id: string;
+  unit_counterparty_id: string | null;
 
   @Column({ 
     type: 'enum', 

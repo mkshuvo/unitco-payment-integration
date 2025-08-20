@@ -46,3 +46,4 @@ CREATE TABLE payout_item (
   INDEX idx_payout_item_status (status),
   INDEX idx_payout_item_reference (reference_id)
 );
+

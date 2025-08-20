@@ -1,9 +1,7 @@
-version: "3.9"
-
 services:
   mysql:
     image: mysql:8.4
-    command: ["--default-authentication-plugin=mysql_native_password", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
       MYSQL_DATABASE: ${MYSQL_DATABASE:-unitco}
@@ -33,6 +31,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    env_file:
+      - ./.env
     environment:
       NODE_ENV: production
       PORT: 3000
@@ -44,6 +44,8 @@ services:
       DB_NAME: ${MYSQL_DATABASE:-unitco}
       REDIS_URL: redis://redis:6379
       ENCRYPTION_KEY: 5Rq0BvdtCffVuTKoBovPVvPk7ltr+N81Pjx5105xpdE=
+      UNIT_BASE_URL: https://api.s.unit.sh
+      UNIT_STATUS_CHECK_PATH: /identity
     ports:
       - "41873:3000" # random high port to avoid conflicts
     depends_on:
@@ -65,6 +67,7 @@ services:
       NODE_ENV: production
       PORT: 3000
       NEXT_TELEMETRY_DISABLED: 1
+      DOCKER: 1
     ports:
       - "56483:3000" # random high port to avoid conflicts
     depends_on:

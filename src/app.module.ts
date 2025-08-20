@@ -7,6 +7,8 @@ import { DatabaseModule } from './database/database.module';
 import { BankModule } from './bank/bank.module';
 import { CryptoModule } from './crypto/crypto.module';
 import { PayoutModule } from './payout/payout.module';
+import { ApiKeysModule } from './api-keys/api-keys.module';
+import { IntegrationModule } from './integration/integration.module';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { PayoutModule } from './payout/payout.module';
     BankModule,
     CryptoModule,
     PayoutModule,
+    ApiKeysModule,
+    IntegrationModule,
   ],
   controllers: [AppController],
   providers: [AppService],
