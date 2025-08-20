@@ -1,10 +1,18 @@
 {
+  "$schema": "https://json.schemastore.org/package.json",
   "name": "unitco-payment-integration",
   "version": "0.0.1",
   "description": "",
   "author": "",
   "private": true,
+  "workspaces": [
+    "web"
+  ],
   "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20.11",
+    "npm": ">=10"
+  },
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -17,14 +25,19 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "dev": "concurrently -n api,web -c green,blue \"npm run start:dev\" \"npm run dev --prefix web\"",
+    "dev:api": "npm run start:dev",
+    "dev:web": "npm run dev --prefix web",
+    "build:web": "npm run build --prefix web",
+    "start:web": "npm run start --prefix web"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
-    "@nestjs/config": "^3.2.3",
-    "@nestjs/typeorm": "^10.0.2",
+    "@nestjs/config": "^4.0.0",
+    "@nestjs/typeorm": "^11.0.0",
     "class-validator": "^0.14.1",
     "class-transformer": "^0.5.1",
     "reflect-metadata": "^0.2.2",
@@ -58,7 +71,8 @@
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.3",
-    "typescript-eslint": "^8.20.0"
+    "typescript-eslint": "^8.20.0",
+    "concurrently": "^9.0.1"
   },
   "jest": {
     "moduleFileExtensions": [

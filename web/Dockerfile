@@ -3,11 +3,19 @@
 # --- Build stage ---
 FROM node:22-alpine AS builder
 WORKDIR /app
+# Copy root manifest and lockfile + web manifest so npm can resolve workspaces
 COPY package*.json ./
-# Use install instead of ci since no lockfile is checked in yet
-RUN npm install --no-audit --no-fund
+COPY web/package*.json ./web/
+# Quiet npm
+ENV NPM_CONFIG_FUND=false \
+    NPM_CONFIG_AUDIT=false \
+    NPM_CONFIG_LOGLEVEL=error
+# Install all workspaces (dev deps included for build) without enforcing lockfile
+RUN npm install --workspaces --include=dev
+# Copy the rest of the repo
 COPY . .
-RUN npm run build
+# Build only the web workspace (Next.js standalone output)
+RUN npm run --workspace web build
 
 # --- Runtime stage ---
 FROM node:22-alpine AS runner
@@ -17,9 +25,9 @@ ENV PORT=3000
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Copy Next.js standalone output
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./public/.next/static
-COPY --from=builder /app/public ./public
+COPY --from=builder /app/web/.next/standalone ./
+COPY --from=builder /app/web/.next/static ./public/.next/static
+COPY --from=builder /app/web/public ./public
 
 EXPOSE 3000
 

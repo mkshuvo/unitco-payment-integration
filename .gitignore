@@ -12,6 +12,8 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
+web/node_modules
+web/.next
 # OS
 .DS_Store
 

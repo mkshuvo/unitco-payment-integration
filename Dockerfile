@@ -4,8 +4,11 @@
 FROM node:22-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
-# Use install instead of ci to avoid lockfile mismatch during scaffolding
-RUN npm install --no-audit --no-fund
+# Install with dev deps for build; suppress noisy warnings
+ENV NPM_CONFIG_FUND=false \
+    NPM_CONFIG_AUDIT=false \
+    NPM_CONFIG_LOGLEVEL=error
+RUN npm install --include=dev
 COPY . .
 RUN npm run build
 
@@ -19,7 +22,7 @@ RUN apk add --no-cache curl
 ENV NODE_ENV=production
 ENV PORT=3000
 
-# Copy only necessary files
+# Copy only necessary files and reuse built node_modules
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
