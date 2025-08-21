@@ -26,6 +26,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
+    "migrate": "ts-node -T scripts/run-migrations.ts",
     "dev": "concurrently -n api,web -c green,blue \"npm run start:dev\" \"npm run dev --prefix web\"",
     "dev:api": "npm run start:dev",
     "dev:web": "npm run dev --prefix web",
