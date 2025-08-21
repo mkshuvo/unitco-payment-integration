@@ -30,16 +30,32 @@ export class UnitService {
     try {
       key = await this.apiKeys.getActivePlaintext();
     } catch (err: any) {
-      const elapsed = Date.now() - start;
-      const reason = 'Failed to load active API key';
-      this.logger.error(`${reason}: ${err?.message || err}`);
-      return {
-        status: 'DOWN',
-        checkedAt: new Date().toISOString(),
-        responseTimeMs: elapsed,
-        target,
-        reason,
-      };
+      // If DB lookup failed, try env fallback before declaring DOWN
+      const envKey = (this.config.get<string>('UNIT_API_KEY') || '').trim();
+      if (envKey) {
+        this.logger.warn('DB key lookup failed; using UNIT_API_KEY from environment as fallback.');
+        key = envKey;
+      } else {
+        const elapsed = Date.now() - start;
+        const reason = 'Failed to load active API key';
+        this.logger.error(`${reason}: ${err?.message || err}`);
+        return {
+          status: 'DOWN',
+          checkedAt: new Date().toISOString(),
+          responseTimeMs: elapsed,
+          target,
+          reason,
+        };
+      }
+    }
+
+    // Fallback to environment variable if no active DB key
+    if (!key) {
+      const envKey = (this.config.get<string>('UNIT_API_KEY') || '').trim();
+      if (envKey) {
+        this.logger.warn('Using UNIT_API_KEY from environment as fallback (no active DB key).');
+        key = envKey;
+      }
     }
 
     if (!key) {
