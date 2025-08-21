@@ -1,6 +1,6 @@
 # Project Progress Report
 
-Last updated: 2025-08-21T02:05:02+06:00
+Last updated: 2025-08-22T03:34:36+06:00
 
 This document tracks implementation progress against `docs/project_plan/design_implementation_plan.md` and provides precise references for an agentic IDE to continue work.
 
@@ -248,6 +248,27 @@ How to get status UP
 3) Refresh status page: http://localhost:56483/status
 
 Notes
-- Preference honored: SDK-based status check with Unit SDK + 5s timeout, no raw HTTP.
-- `.env` may include `UNIT_API_KEY`, but status check intentionally uses DB-managed active key for rotation/auditing.
-- Stack healthy after `make build-up`; API/Web healthchecks pass.
+-- Preference honored: SDK-based status check with Unit SDK + 5s timeout, no raw HTTP.
+-- `.env` may include `UNIT_API_KEY`, but status check intentionally uses DB-managed active key for rotation/auditing.
+-- Stack healthy after `make build-up`; API/Web healthchecks pass.
+
+## Progress Update - 2025-08-22 03:34 +06:00
+- Backend (auth/db):
+  - Added auth entities: `users`, `roles`, `user_roles`, `user_tokens`.
+    - Files: `src/entities/user.entity.ts`, `src/entities/role.entity.ts`, `src/entities/user-role.entity.ts`, `src/entities/user-token.entity.ts`
+    - Aligned `users.id` to `INT UNSIGNED` to match `bank_account.user_id`.
+  - Created SQL migrations:
+    - `src/migrations/1703123456788-create-bank-tables.sql` (baseline, idempotent)
+    - `src/migrations/1703123456792-create-auth-tables.sql` (auth tables)
+    - `src/migrations/1703123456793-seed-roles.sql` (ADMIN, ACCOUNTANT, USER)
+  - Migration runner + script:
+    - `scripts/run-migrations.ts`, `package.json` script `migrate`
+  - Build status: `npm run build` OK.
+- Infra/runtime:
+  - MySQL and Redis containers started via `docker compose up -d mysql redis`.
+
+Next
+- Apply DB migrations locally: `npm run migrate`
+- T03: Implement AuthModule core (Argon2id password hashing, JWT access/refresh, config wiring)
+- T04: Implement `/auth/login`, `/auth/refresh` (rotation), `/auth/logout`
+- T05: RBAC guards/decorators; T06: audit logging
