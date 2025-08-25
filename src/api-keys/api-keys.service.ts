@@ -1,4 +1,8 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { ApiKey } from '../entities/api-key.entity';
@@ -72,7 +76,15 @@ export class ApiKeysService {
     }
   }
 
-  async list(limit = 20, offset = 0): Promise<{ items: ApiKeyView[]; total: number; limit: number; offset: number }> {
+  async list(
+    limit = 20,
+    offset = 0,
+  ): Promise<{
+    items: ApiKeyView[];
+    total: number;
+    limit: number;
+    offset: number;
+  }> {
     const [rows, total] = await this.repo.findAndCount({
       take: Math.min(Math.max(limit, 1), 100),
       skip: Math.max(offset, 0),
@@ -81,7 +93,7 @@ export class ApiKeysService {
       withDeleted: false,
     });
     return {
-      items: rows.map(r => this.toView(r)),
+      items: rows.map((r) => this.toView(r)),
       total,
       limit,
       offset,
@@ -92,7 +104,6 @@ export class ApiKeysService {
     const entity = await this.repo.findOne({ where: { id } });
     if (!entity) throw new NotFoundException('API key not found');
     return this.toView(entity);
-    
   }
 
   async update(id: string, dto: UpdateApiKeyDto): Promise<ApiKeyView> {
@@ -134,14 +145,16 @@ export class ApiKeysService {
       if (!target) throw new NotFoundException('API key not found');
 
       // Set all inactive
-      await repo.createQueryBuilder()
+      await repo
+        .createQueryBuilder()
         .update(ApiKey)
         .set({ is_active: 0 })
         .where('deleted_time IS NULL')
         .execute();
 
       // Activate target
-      await repo.createQueryBuilder()
+      await repo
+        .createQueryBuilder()
         .update(ApiKey)
         .set({ is_active: 1 })
         .where('id = :id', { id })

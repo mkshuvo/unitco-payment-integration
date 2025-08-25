@@ -24,18 +24,28 @@ export class PayoutService {
     endDate: Date,
     userId: number,
   ): Promise<PayoutPreviewDto> {
-    this.logger.log(`Computing payout preview for user ${userId} from ${startDate} to ${endDate}`);
+    this.logger.log(
+      `Computing payout preview for user ${userId} from ${startDate} to ${endDate}`,
+    );
 
     // Get user's primary bank account
-    const primaryAccount = await this.bankAccountRepository.findPrimaryByUser(userId);
+    const primaryAccount =
+      await this.bankAccountRepository.findPrimaryByUser(userId);
     if (!primaryAccount) {
       throw new Error('No primary bank account found for user');
     }
 
     // Mock computation - in real app this would query actual earnings data
-    const mockEarnings = await this.getMockEarningsForPeriod(startDate, endDate, userId);
-    
-    const totalAmount = mockEarnings.reduce((sum, earning) => sum + earning.amount, 0);
+    const mockEarnings = await this.getMockEarningsForPeriod(
+      startDate,
+      endDate,
+      userId,
+    );
+
+    const totalAmount = mockEarnings.reduce(
+      (sum, earning) => sum + earning.amount,
+      0,
+    );
     const itemCount = mockEarnings.length;
 
     return {
@@ -77,19 +87,22 @@ export class PayoutService {
     );
 
     if (existingBatch) {
-      this.logger.log(`Found existing batch ${existingBatch.batch_id} for idempotency key`);
+      this.logger.log(
+        `Found existing batch ${existingBatch.batch_id} for idempotency key`,
+      );
       return this.toPayoutBatchView(existingBatch);
     }
 
     // Get user's primary bank account
-    const primaryAccount = await this.bankAccountRepository.findPrimaryByUser(userId);
+    const primaryAccount =
+      await this.bankAccountRepository.findPrimaryByUser(userId);
     if (!primaryAccount) {
       throw new Error('No primary bank account found for user');
     }
 
     // Compute payout items
     const earnings = await this.getMockEarningsForPeriod(start, end, userId);
-    
+
     // Create batch
     const batch = await this.payoutBatchRepository.createBatch({
       userId,
@@ -104,7 +117,7 @@ export class PayoutService {
 
     // Create payout items
     const payoutItems = await Promise.all(
-      earnings.map(earning =>
+      earnings.map((earning) =>
         this.payoutItemRepository.createItem({
           batchId: batch.batch_id,
           userId,
@@ -113,11 +126,13 @@ export class PayoutService {
           description: earning.description,
           referenceId: earning.referenceId,
           status: 'PENDING',
-        })
-      )
+        }),
+      ),
     );
 
-    this.logger.log(`Created payout batch ${batch.batch_id} with ${payoutItems.length} items`);
+    this.logger.log(
+      `Created payout batch ${batch.batch_id} with ${payoutItems.length} items`,
+    );
 
     return this.toPayoutBatchView(batch);
   }
@@ -139,9 +154,10 @@ export class PayoutService {
 
     // Get payout items
     const items = await this.payoutItemRepository.findByBatchId(batchId);
-    
+
     // Get user's primary bank account
-    const primaryAccount = await this.bankAccountRepository.findPrimaryByUser(userId);
+    const primaryAccount =
+      await this.bankAccountRepository.findPrimaryByUser(userId);
     if (!primaryAccount) {
       throw new Error('No primary bank account found for user');
     }
@@ -149,17 +165,26 @@ export class PayoutService {
     // Mock Unit API submission
     try {
       await this.submitToUnitApi(batch, items, primaryAccount);
-      
+
       // Update batch status
-      await this.payoutBatchRepository.updateStatus(batchId, 'SUBMITTED', userId);
-      await this.payoutItemRepository.updateStatusByBatchId(batchId, 'SUBMITTED');
-      
-      this.logger.log(`Successfully submitted payout batch ${batchId} to Unit API`);
+      await this.payoutBatchRepository.updateStatus(
+        batchId,
+        'SUBMITTED',
+        userId,
+      );
+      await this.payoutItemRepository.updateStatusByBatchId(
+        batchId,
+        'SUBMITTED',
+      );
+
+      this.logger.log(
+        `Successfully submitted payout batch ${batchId} to Unit API`,
+      );
     } catch (error) {
       // Update batch status to failed
       await this.payoutBatchRepository.updateStatus(batchId, 'FAILED', userId);
       await this.payoutItemRepository.updateStatusByBatchId(batchId, 'FAILED');
-      
+
       this.logger.error(`Failed to submit payout batch ${batchId}`, error);
       throw error;
     }
@@ -170,7 +195,7 @@ export class PayoutService {
    */
   async getPayoutBatches(userId: number): Promise<PayoutBatchView[]> {
     const batches = await this.payoutBatchRepository.findByUser(userId);
-    return batches.map(batch => this.toPayoutBatchView(batch));
+    return batches.map((batch) => this.toPayoutBatchView(batch));
   }
 
   /**
@@ -180,15 +205,23 @@ export class PayoutService {
     startDate: Date,
     endDate: Date,
     userId: number,
-  ): Promise<Array<{ amount: number; description: string; referenceId: string }>> {
+  ): Promise<
+    Array<{ amount: number; description: string; referenceId: string }>
+  > {
     // Mock implementation - in real app this would query actual earnings data
-    const daysDiff = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-    const mockEarnings: Array<{ amount: number; description: string; referenceId: string }> = [];
+    const daysDiff = Math.floor(
+      (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
+    );
+    const mockEarnings: Array<{
+      amount: number;
+      description: string;
+      referenceId: string;
+    }> = [];
 
     for (let i = 0; i < Math.min(daysDiff, 7); i++) {
       const date = new Date(startDate);
       date.setDate(date.getDate() + i);
-      
+
       mockEarnings.push({
         amount: Math.floor(Math.random() * 1000) + 100, // $100-$1100
         description: `Earnings for ${date.toISOString().split('T')[0]}`,
@@ -205,12 +238,12 @@ export class PayoutService {
   private calculateEstimatedDeliveryDate(batchDate: Date): Date {
     const deliveryDate = new Date(batchDate);
     deliveryDate.setDate(deliveryDate.getDate() + 1);
-    
+
     // Skip weekends
     while (deliveryDate.getDay() === 0 || deliveryDate.getDay() === 6) {
       deliveryDate.setDate(deliveryDate.getDate() + 1);
     }
-    
+
     return deliveryDate;
   }
 
@@ -229,8 +262,8 @@ export class PayoutService {
     }
 
     // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
     this.logger.log(`Mock Unit API submission for batch ${batch.batch_id}`, {
       totalAmount: batch.total_amount,
       itemCount: items.length,
@@ -250,9 +283,10 @@ export class PayoutService {
       itemCount: batch.item_count,
       currency: batch.currency,
       status: batch.status,
-      estimatedDeliveryDate: this.calculateEstimatedDeliveryDate(batch.end_date),
+      estimatedDeliveryDate: this.calculateEstimatedDeliveryDate(
+        batch.end_date,
+      ),
       createdAt: batch.created_time.getTime(),
     };
   }
 }
-

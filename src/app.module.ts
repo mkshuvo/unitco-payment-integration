@@ -9,6 +9,7 @@ import { CryptoModule } from './crypto/crypto.module';
 import { PayoutModule } from './payout/payout.module';
 import { ApiKeysModule } from './api-keys/api-keys.module';
 import { IntegrationModule } from './integration/integration.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { IntegrationModule } from './integration/integration.module';
     PayoutModule,
     ApiKeysModule,
     IntegrationModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

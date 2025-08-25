@@ -91,6 +91,47 @@ npm run test:e2e
 node scripts/test-api.js
 ```
 
+### Onboarding — Application Form (Sandbox)
+
+- Backend endpoint: `POST /integration/unit/application-forms` returns `{ id, token, expiration? }` used by the Unit Application Form component.
+- Frontend page: `/onboarding/application-form` fetches a short‑lived token from the backend and embeds
+  `<unit-elements-application-form application-form-id="{id}" application-form-token="{token}" />`.
+- CSP for this route allows only the Unit Sandbox UI CDN and local backend during development. See `web/app/onboarding/application-form/head.tsx`.
+
+Run locally:
+
+```bash
+# Terminal A: API on 41873
+npm run start:dev
+
+# Terminal B: Web on 3001
+npm run dev --prefix web
+
+# Open page
+http://localhost:3001/onboarding/application-form
+```
+
+Manual token endpoint test:
+
+```bash
+node scripts/test-application-form.js
+```
+
+E2E smoke with Playwright (web):
+
+```bash
+# Install browsers
+npm run playwright:install --prefix web
+
+# Run tests (starts Next.js dev server on port 3001 automatically)
+npm run test:e2e --prefix web
+```
+
+Notes:
+
+- The E2E suite includes a mocked path and a real token fetch using `page.request.post()`.
+- The real-token test skips gracefully if the backend isn’t running or `UNIT_API_KEY` isn’t configured.
+
 ## Project Structure
 
 ```
@@ -135,6 +176,46 @@ UNIT_API_KEY=your_unit_api_key
 UNIT_WEBHOOK_SECRET=your_webhook_secret
 JWT_ACCESS_SECRET=your_jwt_secret
 JWT_REFRESH_SECRET=your_jwt_refresh_secret
+```
+
+### Frontend (web) — Unit White‑Label UI (Sandbox‑only)
+
+```bash
+# Sandbox-only mode is enforced. NEXT_PUBLIC_UNIT_UI_ENV is currently ignored.
+# Optional initial JWT for white‑label app (overridden by localStorage if present)
+NEXT_PUBLIC_UNIT_JWT=demo.jwt.token
+
+# Optional customization URLs per Unit docs
+# Provide absolute URLs to your hosted JSON resources if you use branding/localization
+NEXT_PUBLIC_UNIT_THEME_URL=https://your-cdn/theme.json
+NEXT_PUBLIC_UNIT_LANGUAGE_URL=https://your-cdn/language.json
+```
+
+Notes:
+
+- The `/banking` page embeds Unit's white‑label app and always loads the Sandbox UI (https://ui.s.unit.sh).
+- JWT resolution order: `localStorage.unitJwt` → `NEXT_PUBLIC_UNIT_JWT` → demo token (`demo.jwt.token`).
+- You can paste a new JWT in the UI and click "Use Token" to persist it to `localStorage`.
+
+### White‑Label UI Usage
+
+- Navigate to `http://localhost:3001/banking` (or the configured port).
+- The page embeds Unit's `components-extended.js` and uses the `unit-elements-white-label-app` element with `jwt-token`, and optional `theme` and `language` attributes, exactly as per Unit docs.
+- Use your RS256 end‑user JWT (or a `customer-token`). You only need one of them; both are supported by the component.
+- No additional NPM package is required for web embedding; the script is loaded from Unit's CDN.
+- When the token expires (401), the page shows a hint to refresh.
+
+### Logout Cleanup Helper
+
+Call the cleanup helper during your app's logout flow to remove Unit runtime tokens produced by the white‑label app:
+
+```ts
+import { clearUnitStorage } from '@/lib/unit';
+
+function onLogout() {
+  // ... your auth session cleanup
+  clearUnitStorage();
+}
 ```
 
 ## Next Steps

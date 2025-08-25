@@ -1,8 +1,15 @@
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   output: 'standalone',
   eslint: { ignoreDuringBuilds: true },
+  // Silence workspace root inference warning when multiple lockfiles exist.
+  outputFileTracingRoot: path.join(__dirname, '..'),
   experimental: {
     optimizePackageImports: ["@mui/material", "@mui/icons-material", "@emotion/react", "@emotion/styled"],
   },

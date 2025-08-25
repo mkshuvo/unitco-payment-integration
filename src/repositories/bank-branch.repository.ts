@@ -83,7 +83,7 @@ export class BankBranchRepository {
       'Capital One',
       'TD Bank',
     ];
-    
+
     const index = parseInt(routingNumber.slice(-2)) % bankNames.length;
     return bankNames[index];
   }

@@ -1,10 +1,18 @@
-import { Injectable, BadRequestException, UnprocessableEntityException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { CryptoService } from '../crypto/crypto.service';
 import { BankBranchRepository } from '../repositories/bank-branch.repository';
 import { BankAccountRepository } from '../repositories/bank-account.repository';
 import { AddAchBankDto } from './dto/add-ach-bank.dto';
 import { BankAccountView } from './dto/bank-account-view.dto';
-import { isValidUsRouting, isValidUsAccountNumber, maskAccountNumber } from './validators';
+import {
+  isValidUsRouting,
+  isValidUsAccountNumber,
+  maskAccountNumber,
+} from './validators';
 
 @Injectable()
 export class BankService {
@@ -17,7 +25,10 @@ export class BankService {
   /**
    * Validates ACH bank account data and creates encrypted record
    */
-  async addAchBankAccount(userId: number, dto: AddAchBankDto): Promise<BankAccountView> {
+  async addAchBankAccount(
+    userId: number,
+    dto: AddAchBankDto,
+  ): Promise<BankAccountView> {
     // Server-side validation
     if (!isValidUsRouting(dto.routingNumber)) {
       throw new BadRequestException('INVALID_ROUTING_NUMBER');
@@ -33,7 +44,9 @@ export class BankService {
     const normalizedZip = dto.zip.trim();
 
     // Get or create bank branch
-    const bankName = await this.bankBranchRepository.getBankNameFromRouting(dto.routingNumber);
+    const bankName = await this.bankBranchRepository.getBankNameFromRouting(
+      dto.routingNumber,
+    );
     const branch = await this.bankBranchRepository.findOrCreateByRouting(
       'US',
       dto.routingNumber,
@@ -42,24 +55,29 @@ export class BankService {
     );
 
     // Determine if this should be primary
-    const shouldBePrimary = await this.bankAccountRepository.shouldBePrimary(userId, dto.makePrimary);
+    const shouldBePrimary = await this.bankAccountRepository.shouldBePrimary(
+      userId,
+      dto.makePrimary,
+    );
 
     // Create bank account record
-    const bankAccount = await this.bankAccountRepository.createEncryptedAccount({
-      userId,
-      branchId: branch.id,
-      accountNumber: dto.accountNumber,
-      holderName: dto.holderName,
-      address1: dto.address1,
-      address2: dto.address2,
-      city: normalizedCity,
-      state: normalizedState,
-      zip: normalizedZip,
-      country: 'US',
-      method: 'ACH',
-      currency: 'USD',
-      makePrimary: shouldBePrimary,
-    });
+    const bankAccount = await this.bankAccountRepository.createEncryptedAccount(
+      {
+        userId,
+        branchId: branch.id,
+        accountNumber: dto.accountNumber,
+        holderName: dto.holderName,
+        address1: dto.address1,
+        address2: dto.address2,
+        city: normalizedCity,
+        state: normalizedState,
+        zip: normalizedZip,
+        country: 'US',
+        method: 'ACH',
+        currency: 'USD',
+        makePrimary: shouldBePrimary,
+      },
+    );
 
     // Attempt Unit counterparty creation (mock for now)
     try {
@@ -88,7 +106,7 @@ export class BankService {
    */
   async getBankAccounts(userId: number): Promise<BankAccountView[]> {
     const accounts = await this.bankAccountRepository.findByUser(userId);
-    return accounts.map(account => this.toBankAccountView(account));
+    return accounts.map((account) => this.toBankAccountView(account));
   }
 
   /**
@@ -96,12 +114,8 @@ export class BankService {
    */
   private async createUnitCounterparty(dto: AddAchBankDto): Promise<string> {
     // Mock implementation - in real app this would call Unit API
-    // Simulate occasional failures for testing
-    if (Math.random() < 0.1) {
-      throw new Error('Unit API temporarily unavailable');
-    }
-    
-    return `unit_cp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    // Deterministic success for tests; failure paths are covered by explicit mocks in specs
+    return `unit_cp_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
   }
 
   /**

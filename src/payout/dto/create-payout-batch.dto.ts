@@ -11,4 +11,3 @@ export class CreatePayoutBatchDto {
   @IsNotEmpty()
   idempotencyKey: string;
 }
-

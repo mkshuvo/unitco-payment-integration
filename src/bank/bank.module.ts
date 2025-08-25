@@ -9,10 +9,7 @@ import { BankBranchRepository } from '../repositories/bank-branch.repository';
 import { BankAccountRepository } from '../repositories/bank-account.repository';
 
 @Module({
-  imports: [
-    CryptoModule,
-    TypeOrmModule.forFeature([BankBranch, BankAccount]),
-  ],
+  imports: [CryptoModule, TypeOrmModule.forFeature([BankBranch, BankAccount])],
   controllers: [BankController],
   providers: [BankService, BankBranchRepository, BankAccountRepository],
   exports: [BankService],

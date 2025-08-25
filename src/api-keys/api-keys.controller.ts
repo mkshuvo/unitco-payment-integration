@@ -1,4 +1,14 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiKeysService } from './api-keys.service';
 import { CreateApiKeyDto } from './dto/create-api-key.dto';
 import { UpdateApiKeyDto } from './dto/update-api-key.dto';
@@ -15,10 +25,7 @@ export class ApiKeysController {
   }
 
   @Get()
-  async list(
-    @Query('limit') limit?: string,
-    @Query('offset') offset?: string,
-  ) {
+  async list(@Query('limit') limit?: string, @Query('offset') offset?: string) {
     const lim = limit ? parseInt(limit, 10) : 20;
     const off = offset ? parseInt(offset, 10) : 0;
     return this.service.list(lim, off);

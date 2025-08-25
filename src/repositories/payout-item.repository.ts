@@ -65,11 +65,14 @@ export class PayoutItemRepository {
   /**
    * Update Unit payment ID for an item
    */
-  async updateUnitPaymentId(itemId: number, unitPaymentId: string, userId: number): Promise<void> {
+  async updateUnitPaymentId(
+    itemId: number,
+    unitPaymentId: string,
+    userId: number,
+  ): Promise<void> {
     await this.payoutItemRepository.update(itemId, {
       unit_payment_id: unitPaymentId,
       updated_by: userId,
     });
   }
 }
-

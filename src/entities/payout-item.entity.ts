@@ -1,4 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { PayoutBatch } from './payout-batch.entity';
 
 @Entity('payout_item')
@@ -24,10 +32,10 @@ export class PayoutItem {
   @Column({ type: 'varchar', length: 128 })
   reference_id: string;
 
-  @Column({ 
-    type: 'enum', 
-    enum: ['PENDING', 'SUBMITTED', 'COMPLETED', 'FAILED'], 
-    default: 'PENDING' 
+  @Column({
+    type: 'enum',
+    enum: ['PENDING', 'SUBMITTED', 'COMPLETED', 'FAILED'],
+    default: 'PENDING',
   })
   status: 'PENDING' | 'SUBMITTED' | 'COMPLETED' | 'FAILED';
 
@@ -47,8 +55,7 @@ export class PayoutItem {
   updated_time: Date;
 
   // Relationships
-  @ManyToOne(() => PayoutBatch, batch => batch.items)
+  @ManyToOne(() => PayoutBatch, (batch) => batch.items)
   @JoinColumn({ name: 'batch_id' })
   batch: PayoutBatch;
 }
-

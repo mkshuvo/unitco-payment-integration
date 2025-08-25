@@ -9,7 +9,10 @@ import { BankAccountRepository } from '../repositories/bank-account.repository';
 import { BankBranch } from '../entities/bank-branch.entity';
 import { BankAccount } from '../entities/bank-account.entity';
 import { AddAchBankDto } from './dto/add-ach-bank.dto';
-import { BadRequestException, UnprocessableEntityException } from '@nestjs/common';
+import {
+  BadRequestException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 
 describe('BankService', () => {
   let service: BankService;
@@ -48,10 +51,14 @@ describe('BankService', () => {
             encryptField: jest.fn().mockResolvedValue('encrypted_data'),
             maskSensitiveData: jest.fn().mockImplementation((data, type) => {
               switch (type) {
-                case 'account': return `****${data.slice(-4)}`;
-                case 'routing': return `${data.slice(0, 4)}****${data.slice(-1)}`;
-                case 'name': return `${data.slice(0, 1)}${'*'.repeat(data.length - 2)}${data.slice(-1)}`;
-                default: return '****';
+                case 'account':
+                  return `****${data.slice(-4)}`;
+                case 'routing':
+                  return `${data.slice(0, 4)}****${data.slice(-1)}`;
+                case 'name':
+                  return `${data.slice(0, 1)}${'*'.repeat(data.length - 2)}${data.slice(-1)}`;
+                default:
+                  return '****';
               }
             }),
           },
@@ -66,9 +73,13 @@ describe('BankService', () => {
         {
           provide: BankAccountRepository,
           useValue: {
-            createEncryptedAccount: jest.fn().mockResolvedValue(mockBankAccount),
+            createEncryptedAccount: jest
+              .fn()
+              .mockResolvedValue(mockBankAccount),
             shouldBePrimary: jest.fn().mockResolvedValue(true),
-            updateUnitCounterpartyStatus: jest.fn().mockResolvedValue(undefined),
+            updateUnitCounterpartyStatus: jest
+              .fn()
+              .mockResolvedValue(undefined),
             findByUser: jest.fn().mockResolvedValue([mockBankAccount]),
           },
         },
@@ -89,7 +100,11 @@ describe('BankService', () => {
         {
           provide: ConfigService,
           useValue: {
-            get: jest.fn().mockReturnValue('dGVzdC1rZXktZm9yLWVuY3J5cHRpb24tdGVzdGluZy1wdXJwb3Nlcw=='),
+            get: jest
+              .fn()
+              .mockReturnValue(
+                'dGVzdC1rZXktZm9yLWVuY3J5cHRpb24tdGVzdGluZy1wdXJwb3Nlcw==',
+              ),
           },
         },
       ],
@@ -97,8 +112,11 @@ describe('BankService', () => {
 
     service = module.get<BankService>(BankService);
     cryptoService = module.get<CryptoService>(CryptoService);
-    bankBranchRepository = module.get<BankBranchRepository>(BankBranchRepository);
-    bankAccountRepository = module.get<BankAccountRepository>(BankAccountRepository);
+    bankBranchRepository =
+      module.get<BankBranchRepository>(BankBranchRepository);
+    bankAccountRepository = module.get<BankAccountRepository>(
+      BankAccountRepository,
+    );
   });
 
   it('should be defined', () => {
@@ -143,26 +161,28 @@ describe('BankService', () => {
     it('should reject invalid routing number', async () => {
       const invalidDto = { ...validDto, routingNumber: '123456789' };
 
-      await expect(service.addAchBankAccount(1, invalidDto))
-        .rejects
-        .toThrow(BadRequestException);
+      await expect(service.addAchBankAccount(1, invalidDto)).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('should reject invalid account number', async () => {
       const invalidDto = { ...validDto, accountNumber: '123' }; // Too short
 
-      await expect(service.addAchBankAccount(1, invalidDto))
-        .rejects
-        .toThrow(BadRequestException);
+      await expect(service.addAchBankAccount(1, invalidDto)).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('should handle Unit API failures gracefully', async () => {
       // Mock the service to simulate Unit API failure
-      jest.spyOn(service as any, 'createUnitCounterparty').mockRejectedValue(new Error('Unit API error'));
+      jest
+        .spyOn(service as any, 'createUnitCounterparty')
+        .mockRejectedValue(new Error('Unit API error'));
 
-      await expect(service.addAchBankAccount(1, validDto))
-        .rejects
-        .toThrow(UnprocessableEntityException);
+      await expect(service.addAchBankAccount(1, validDto)).rejects.toThrow(
+        UnprocessableEntityException,
+      );
     });
   });
 

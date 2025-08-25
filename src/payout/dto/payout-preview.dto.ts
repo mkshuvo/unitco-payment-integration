@@ -12,4 +12,3 @@ export interface PayoutPreviewDto {
     method: 'ACH' | 'WIRE';
   };
 }
-

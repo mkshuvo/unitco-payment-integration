@@ -12,6 +12,7 @@ export default function HomePage() {
             Unit Payouts
           </Typography>
           <Button color="inherit" component={Link} href="/onboarding">Onboarding</Button>
+          <Button color="inherit" component={Link} href="/banking">Banking</Button>
           <Button color="inherit" component={Link} href="/accounts">Accounts</Button>
         </Toolbar>
       </AppBar>
@@ -25,6 +26,7 @@ export default function HomePage() {
         <Box sx={{ display: 'flex', gap: 2, mt: 3 }}>
           <Button variant="contained" component={Link} href="/onboarding">Add US Bank Account</Button>
           <Button variant="outlined" component={Link} href="/accounts">Manage Accounts</Button>
+          <Button variant="outlined" component={Link} href="/banking">Open Banking</Button>
         </Box>
         <Box sx={{ mt: 4 }}>
           <Typography variant="body2" color="text.secondary">

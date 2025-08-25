@@ -1,12 +1,12 @@
-import { 
-  Controller, 
-  Post, 
+import {
+  Controller,
+  Post,
   Get,
-  Body, 
+  Body,
   Param,
   Query,
-  UseGuards, 
-  Req, 
+  UseGuards,
+  Req,
   Logger,
   ParseIntPipe,
 } from '@nestjs/common';
@@ -20,7 +20,7 @@ const MockJwtGuard = {
   canActivate: () => true,
 };
 
-// TODO: Replace with actual role guard when RBAC is implemented  
+// TODO: Replace with actual role guard when RBAC is implemented
 const MockRoleGuard = (role: string) => ({
   canActivate: () => true,
 });
@@ -83,11 +83,14 @@ export class PayoutController {
     try {
       const batch = await this.payoutService.createPayoutBatch(dto, userId);
 
-      this.logger.log(`Created payout batch ${batch.batchId} for user ${userId}`, {
-        batchId: batch.batchId,
-        totalAmount: batch.totalAmount,
-        itemCount: batch.itemCount,
-      });
+      this.logger.log(
+        `Created payout batch ${batch.batchId} for user ${userId}`,
+        {
+          batchId: batch.batchId,
+          totalAmount: batch.totalAmount,
+          itemCount: batch.itemCount,
+        },
+      );
 
       return batch;
     } catch (error) {
@@ -111,13 +114,18 @@ export class PayoutController {
     try {
       await this.payoutService.submitPayoutBatch(batchId, userId);
 
-      this.logger.log(`Successfully submitted payout batch ${batchId} for user ${userId}`);
+      this.logger.log(
+        `Successfully submitted payout batch ${batchId} for user ${userId}`,
+      );
 
       return { message: 'Payout batch submitted successfully' };
     } catch (error) {
-      this.logger.error(`Failed to submit payout batch ${batchId} for user ${userId}`, {
-        error: error.message,
-      });
+      this.logger.error(
+        `Failed to submit payout batch ${batchId} for user ${userId}`,
+        {
+          error: error.message,
+        },
+      );
       throw error;
     }
   }
@@ -132,7 +140,9 @@ export class PayoutController {
     try {
       const batches = await this.payoutService.getPayoutBatches(userId);
 
-      this.logger.log(`Retrieved ${batches.length} payout batches for user ${userId}`);
+      this.logger.log(
+        `Retrieved ${batches.length} payout batches for user ${userId}`,
+      );
 
       return batches;
     } catch (error) {
@@ -143,4 +153,3 @@ export class PayoutController {
     }
   }
 }
-

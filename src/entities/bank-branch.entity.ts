@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToMany,
+} from 'typeorm';
 import { BankAccount } from './bank-account.entity';
 
 @Entity('bank_branch')
@@ -49,6 +56,6 @@ export class BankBranch {
   updated_time: Date;
 
   // Relationships
-  @OneToMany(() => BankAccount, bankAccount => bankAccount.branch)
+  @OneToMany(() => BankAccount, (bankAccount) => bankAccount.branch)
   bankAccounts: BankAccount[];
 }

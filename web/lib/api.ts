@@ -2,7 +2,7 @@
  * API client for connecting to the NestJS backend
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:41873';
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:41873';
 
 export interface AddAchBankRequest {
   holderName: string;
@@ -136,10 +136,122 @@ export interface UnitStatusView {
 }
 
 export async function getIntegrationStatus(): Promise<UnitStatusView> {
-  const url = `/integration/unit/status`;
+  const url = `${API_BASE_URL}/integration/unit/status`;
   const res = await fetch(url, { cache: 'no-store' });
   if (!res.ok) {
     throw new Error(`Status check failed: HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+export interface RegisterRequest {
+  email: string;
+  password: string;
+  fullName?: string;
+}
+
+export interface RegisterResponse {
+  id: number;
+  email: string;
+  fullName?: string;
+}
+
+export async function registerUser(data: RegisterRequest): Promise<RegisterResponse> {
+  const url = `${API_BASE_URL}/auth/register`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+  }
+  return response.json();
+}
+
+// ===== Unit Integration Client =====
+
+export interface ResolveCustomerRequest {
+  email: string;
+  userId?: number;
+}
+
+export interface ResolveCustomerResponse {
+  email: string;
+  customerId: string | null;
+  persisted: boolean;
+}
+
+export async function resolveUnitCustomer(
+  data: ResolveCustomerRequest,
+): Promise<ResolveCustomerResponse> {
+  const url = `${API_BASE_URL}/integration/unit/customers/resolve`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || `HTTP ${res.status}: ${res.statusText}`);
+  }
+  return res.json();
+}
+
+export interface CreateTokenVerificationRequest {
+  channel: 'sms' | 'call';
+  phone?: { countryCode: string; number: string };
+  locale?: string;
+}
+
+export interface CreateTokenVerificationResponse {
+  verificationToken: string;
+}
+
+export async function createUnitCustomerTokenVerification(
+  customerId: string,
+  data: CreateTokenVerificationRequest,
+): Promise<CreateTokenVerificationResponse> {
+  const url = `${API_BASE_URL}/integration/unit/customers/${encodeURIComponent(customerId)}/token/verification`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || `HTTP ${res.status}: ${res.statusText}`);
+  }
+  return res.json();
+}
+
+export interface CreateCustomerTokenRequest {
+  scope: string;
+  verificationToken?: string;
+  verificationCode?: string;
+  jwtToken?: string;
+  expiresIn?: number;
+}
+
+export interface CreateCustomerTokenResponse {
+  token: string;
+  expiresIn: number;
+}
+
+export async function createUnitCustomerToken(
+  customerId: string,
+  data: CreateCustomerTokenRequest,
+): Promise<CreateCustomerTokenResponse> {
+  const url = `${API_BASE_URL}/integration/unit/customers/${encodeURIComponent(customerId)}/token`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.message || `HTTP ${res.status}: ${res.statusText}`);
   }
   return res.json();
 }

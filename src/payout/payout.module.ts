@@ -25,4 +25,3 @@ import { CryptoModule } from '../crypto/crypto.module';
   exports: [PayoutService],
 })
 export class PayoutModule {}
-

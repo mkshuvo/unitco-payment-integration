@@ -46,6 +46,7 @@ services:
       ENCRYPTION_KEY: 5Rq0BvdtCffVuTKoBovPVvPk7ltr+N81Pjx5105xpdE=
       UNIT_BASE_URL: https://api.s.unit.sh
       UNIT_STATUS_CHECK_PATH: /identity
+      ALLOW_PUBLIC_REGISTRATION: 'true'
     ports:
       - "41873:3000" # random high port to avoid conflicts
     depends_on:
@@ -68,6 +69,7 @@ services:
       PORT: 3000
       NEXT_TELEMETRY_DISABLED: 1
       DOCKER: 1
+      NEXT_PUBLIC_API_URL: http://localhost:41873
     ports:
       - "56483:3000" # random high port to avoid conflicts
     depends_on:

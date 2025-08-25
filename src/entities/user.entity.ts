@@ -1,4 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, Index } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  DeleteDateColumn,
+  Index,
+} from 'typeorm';
 
 @Entity('users')
 @Index(['email'], { unique: true })
@@ -21,6 +29,10 @@ export class User {
 
   @Column({ type: 'timestamp', nullable: true, default: null })
   last_login_time?: Date | null;
+
+  // Unit: optional mapping to Unit Customer id
+  @Column({ type: 'varchar', length: 64, nullable: true, unique: true })
+  unit_customer_id?: string | null;
 
   @CreateDateColumn({ type: 'timestamp' })
   created_time: Date;

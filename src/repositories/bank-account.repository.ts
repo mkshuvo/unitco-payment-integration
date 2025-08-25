@@ -32,8 +32,12 @@ export class BankAccountRepository {
     makePrimary: boolean;
   }): Promise<BankAccount> {
     // Encrypt sensitive fields
-    const encryptedAccountNumber = await this.cryptoService.encryptField(data.accountNumber);
-    const encryptedHolderName = await this.cryptoService.encryptField(data.holderName);
+    const encryptedAccountNumber = await this.cryptoService.encryptField(
+      data.accountNumber,
+    );
+    const encryptedHolderName = await this.cryptoService.encryptField(
+      data.holderName,
+    );
 
     // Handle primary account logic
     if (data.makePrimary) {
@@ -75,7 +79,10 @@ export class BankAccountRepository {
         .createQueryBuilder()
         .update(BankAccount)
         .set({ is_primary: 0, updated_by: userId })
-        .where('user_id = :userId AND account_id != :accountId', { userId, accountId })
+        .where('user_id = :userId AND account_id != :accountId', {
+          userId,
+          accountId,
+        })
         .execute();
 
       // Set this account as primary
@@ -146,7 +153,10 @@ export class BankAccountRepository {
   /**
    * Check if user should have primary account
    */
-  async shouldBePrimary(userId: number, makePrimary?: boolean): Promise<boolean> {
+  async shouldBePrimary(
+    userId: number,
+    makePrimary?: boolean,
+  ): Promise<boolean> {
     if (makePrimary !== undefined) {
       return makePrimary;
     }

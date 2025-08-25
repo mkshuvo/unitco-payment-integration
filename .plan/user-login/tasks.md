@@ -10,6 +10,30 @@ Legend
 
 ## Task List
 
+### Task Completion Tracking
+
+[x] T00: Registration (Sign-up) endpoints and UI
+[x] T01: DB migrations for Auth (users, roles, user_roles, user_tokens)
+[x] T02: Seed base roles
+[x] T03: AuthModule core (Argon2id, JWT, config)
+[x] T04: Login, Refresh (rotation), Logout endpoints
+[x] T05: RBAC guards and decorators
+[x] T06: Audit logging decorator and service
+[x] T07: CryptoService (AES-GCM) + bank encryption helpers
+[x] T08: Bank schema deltas + indices
+[x] T09: UnitService (SDK) for counterparties + ACH credits
+[x] T10: Bank endpoints (self + admin) with Unit validation
+[x] T11: Payments (service + endpoints) with Unit ACH
+[x] T12: Web auth (login) + protected routing
+[ ] T13: Web banking + admin pages
+[ ] T14: Web payments flows (self + admin)
+[x] T15: Security hardening (CSRF, headers, CORS)
+[ ] T16: Testing suite (unit, integration, E2E)
+[x] T17: ENV, Docker, CI updates
+[ ] T18: Unit "Create Your Account" step alignment (Ready‑to‑Launch)
+
+## Detailed Tasks
+
 - ID: T01
   - Title: DB migrations for Auth (users, roles, user_roles, user_tokens)
   - Description: Create TypeORM entities and initial migrations for `users`, `roles`, `user_roles`, `user_tokens` with indexes and enums per design.
@@ -152,3 +176,21 @@ Legend
 - All Unit interactions use `@unit-finance/unit-node-sdk` with 5s timeouts; idempotency on payment create.
 - Sensitive data is never logged; use redaction and masks.
 - Add-on: Rate limiting and account lockouts (future hardening) can extend T15.
+
+---
+
+- ID: T00
+  - Title: Registration (Sign‑up) endpoints and UI
+  - Description: Implement `/auth/register` with server-side validation (email uniqueness, password policy), Argon2id hashing, and Next.js registration page. Optional: email verification token stubs for future.
+  - Dependencies: T01, T03
+  - Effort: S
+  - Priority: high
+  - Acceptance: API returns 201; user row created; Argon2id hash stored; form validates; basic E2E passes.
+
+- ID: T18
+  - Title: Unit "Create Your Account" step alignment (Ready‑to‑Launch)
+  - Description: Ensure Unit Ready‑to‑Launch → Branding → switch dropdown to "Application Form" and enable the "Create Your Account" step so applicants set credentials during onboarding. Capture configuration evidence (screenshot or doc). Add frontend notes linking this step to our post‑onboarding dashboard flow.
+  - Dependencies: T12 (Web auth), T00 (Registration) — to align UX
+  - Effort: S
+  - Priority: high
+  - Acceptance: Verified in Unit dashboard (manual); onboarding walkthrough includes "Create your account"; internal doc updated.

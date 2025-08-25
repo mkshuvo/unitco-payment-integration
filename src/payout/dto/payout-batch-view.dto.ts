@@ -9,4 +9,3 @@ export interface PayoutBatchView {
   estimatedDeliveryDate: Date;
   createdAt: number;
 }
-

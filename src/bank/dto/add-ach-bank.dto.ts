@@ -1,4 +1,11 @@
-import { IsString, IsEnum, IsOptional, IsBoolean, Length, Matches } from 'class-validator';
+import {
+  IsString,
+  IsEnum,
+  IsOptional,
+  IsBoolean,
+  Length,
+  Matches,
+} from 'class-validator';
 
 export class AddAchBankDto {
   @IsString()

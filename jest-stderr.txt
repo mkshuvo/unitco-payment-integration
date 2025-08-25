@@ -1,0 +1,42 @@
+PASS src/bank/bank.service.spec.ts
+  BankService
+    ΓêÜ should be defined (17 ms)
+    addAchBankAccount
+      ΓêÜ should successfully add a valid ACH bank account (5 ms)
+      ΓêÜ should reject invalid routing number (14 ms)
+      ΓêÜ should reject invalid account number (3 ms)
+      ΓêÜ should handle Unit API failures gracefully (3 ms)
+    getBankAccounts
+      ΓêÜ should return bank accounts for a user (3 ms)
+
+PASS src/app.controller.spec.ts
+  AppController
+    root
+      ΓêÜ should return "Hello World!" (8 ms)
+
+[Nest] 47768  - 08/25/2025, 10:52:09 PM   ERROR [UnitService] Unit createApplicationForm failed: HTTP 401 Unauthorized; idempotencyKey=11527067-feb5-486d-956a-1c907e66d300
+PASS src/integration/unit.service.spec.ts
+  UnitService.createApplicationForm
+    ΓêÜ creates application form and returns id+token (1 ms)
+    ΓêÜ throws on non-ok response (10 ms)
+    ΓêÜ throws when no API key is configured (1 ms)
+
+FAIL src/integration/integration.controller.spec.ts
+  ΓùÅ Test suite failed to run
+
+    src/integration/integration.controller.spec.ts:14:18 - error TS2554: Expected 2 arguments, but got 1.
+
+    14     controller = new IntegrationController(unitService as UnitService);
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+      src/integration/integration.controller.ts:24:5
+        24     @InjectRepository(User) private readonly users: Repository<User>,
+               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        An argument for 'users' was not provided.
+
+Test Suites: 1 failed, 3 passed, 4 total
+Tests:       10 passed, 10 total
+Snapshots:   0 total
+Time:        6.055 s, estimated 9 s
+Ran all test suites.
+Test results written to: jest-out.json

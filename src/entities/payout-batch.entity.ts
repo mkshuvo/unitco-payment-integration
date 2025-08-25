@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToMany,
+} from 'typeorm';
 import { PayoutItem } from './payout-item.entity';
 
 @Entity('payout_batch')
@@ -24,10 +31,10 @@ export class PayoutBatch {
   @Column({ type: 'char', length: 3, default: 'USD' })
   currency: string;
 
-  @Column({ 
-    type: 'enum', 
-    enum: ['PENDING', 'SUBMITTED', 'COMPLETED', 'FAILED'], 
-    default: 'PENDING' 
+  @Column({
+    type: 'enum',
+    enum: ['PENDING', 'SUBMITTED', 'COMPLETED', 'FAILED'],
+    default: 'PENDING',
   })
   status: 'PENDING' | 'SUBMITTED' | 'COMPLETED' | 'FAILED';
 
@@ -50,7 +57,6 @@ export class PayoutBatch {
   updated_time: Date;
 
   // Relationships
-  @OneToMany(() => PayoutItem, item => item.batch)
+  @OneToMany(() => PayoutItem, (item) => item.batch)
   items: PayoutItem[];
 }
-

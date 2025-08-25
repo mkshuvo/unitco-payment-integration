@@ -42,7 +42,10 @@ export class PayoutBatchRepository {
   /**
    * Find batch by user and idempotency key
    */
-  async findByUserAndKey(userId: number, idempotencyKey: string): Promise<PayoutBatch | null> {
+  async findByUserAndKey(
+    userId: number,
+    idempotencyKey: string,
+  ): Promise<PayoutBatch | null> {
     return await this.payoutBatchRepository.findOne({
       where: { user_id: userId, idempotency_key: idempotencyKey },
     });
@@ -84,11 +87,14 @@ export class PayoutBatchRepository {
   /**
    * Update Unit batch ID
    */
-  async updateUnitBatchId(batchId: number, unitBatchId: string, userId: number): Promise<void> {
+  async updateUnitBatchId(
+    batchId: number,
+    unitBatchId: string,
+    userId: number,
+  ): Promise<void> {
     await this.payoutBatchRepository.update(batchId, {
       unit_batch_id: unitBatchId,
       updated_by: userId,
     });
   }
 }
-

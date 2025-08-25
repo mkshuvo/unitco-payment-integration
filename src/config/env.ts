@@ -24,6 +24,8 @@ export const EnvSchema = z.object({
   JWT_ACCESS_SECRET: z.string().min(0).optional(),
   JWT_REFRESH_SECRET: z.string().min(0).optional(),
   CRON_TZ: z.string().min(0).optional(),
+  // Feature flags
+  ALLOW_PUBLIC_REGISTRATION: z.string().min(0).optional(),
 });
 
 export type Env = z.infer<typeof EnvSchema>;
@@ -31,7 +33,9 @@ export type Env = z.infer<typeof EnvSchema>;
 export function validateEnv(config: Record<string, unknown>): Env {
   const parsed = EnvSchema.safeParse(config);
   if (!parsed.success) {
-    const message = parsed.error.issues.map(e => `${e.path.join('.')}: ${e.message}`).join('; ');
+    const message = parsed.error.issues
+      .map((e) => `${e.path.join('.')}: ${e.message}`)
+      .join('; ');
     throw new Error(`Invalid environment configuration: ${message}`);
   }
   return parsed.data;

@@ -1,7 +1,19 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+  Index,
+} from 'typeorm';
 import { BankBranch } from './bank-branch.entity';
 
 @Entity('bank_account')
+@Index(['user_id'])
+@Index(['unit_counterparty_id'], { unique: true, where: 'unit_counterparty_id IS NOT NULL' })
+@Index(['user_id', 'is_primary'])
 export class BankAccount {
   @PrimaryGeneratedColumn()
   account_id: number;
@@ -52,10 +64,10 @@ export class BankAccount {
   @Column({ type: 'varchar', length: 128, nullable: true, unique: true })
   unit_counterparty_id: string | null;
 
-  @Column({ 
-    type: 'enum', 
-    enum: ['PENDING', 'ACTIVE', 'REJECTED'], 
-    default: 'PENDING' 
+  @Column({
+    type: 'enum',
+    enum: ['PENDING', 'ACTIVE', 'REJECTED'],
+    default: 'PENDING',
   })
   unit_counterparty_status: 'PENDING' | 'ACTIVE' | 'REJECTED';
 
@@ -65,17 +77,17 @@ export class BankAccount {
   @Column({ type: 'tinyint', default: 0 })
   is_primary: number;
 
-  @Column({ 
-    type: 'enum', 
-    enum: ['ACTIVE', 'INACTIVE'], 
-    default: 'ACTIVE' 
+  @Column({
+    type: 'enum',
+    enum: ['ACTIVE', 'INACTIVE'],
+    default: 'ACTIVE',
   })
   status: 'ACTIVE' | 'INACTIVE';
 
-  @Column({ 
-    type: 'enum', 
-    enum: ['ACH', 'WIRE'], 
-    default: 'ACH' 
+  @Column({
+    type: 'enum',
+    enum: ['ACH', 'WIRE'],
+    default: 'ACH',
   })
   method: 'ACH' | 'WIRE';
 
@@ -95,7 +107,7 @@ export class BankAccount {
   updated_time: Date;
 
   // Relationships
-  @ManyToOne(() => BankBranch, branch => branch.bankAccounts)
+  @ManyToOne(() => BankBranch, (branch) => branch.bankAccounts)
   @JoinColumn({ name: 'branch_id' })
   branch: BankBranch;
 }

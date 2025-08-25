@@ -20,10 +20,15 @@ export class CryptoService {
     const iv = randomBytes(this.ivLength);
     const aad = Buffer.from('field-encryption', 'utf8');
 
-    const cipher = createCipheriv(this.algorithm, key, iv, { authTagLength: this.tagLength });
+    const cipher = createCipheriv(this.algorithm, key, iv, {
+      authTagLength: this.tagLength,
+    });
     cipher.setAAD(aad);
 
-    const encryptedBuf = Buffer.concat([cipher.update(plaintext, 'utf8'), cipher.final()]);
+    const encryptedBuf = Buffer.concat([
+      cipher.update(plaintext, 'utf8'),
+      cipher.final(),
+    ]);
     const tag = cipher.getAuthTag();
 
     // Combine: iv + tag + ciphertext
@@ -41,7 +46,10 @@ export class CryptoService {
 
     // Extract: iv + tag + ciphertext
     const iv = combined.subarray(0, this.ivLength);
-    const tag = combined.subarray(this.ivLength, this.ivLength + this.tagLength);
+    const tag = combined.subarray(
+      this.ivLength,
+      this.ivLength + this.tagLength,
+    );
     const ciphertext = combined.subarray(this.ivLength + this.tagLength);
 
     const aad = Buffer.from('field-encryption', 'utf8');
@@ -49,24 +57,34 @@ export class CryptoService {
     decipher.setAuthTag(tag);
     decipher.setAAD(aad);
 
-    const decryptedBuf = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
+    const decryptedBuf = Buffer.concat([
+      decipher.update(ciphertext),
+      decipher.final(),
+    ]);
     return decryptedBuf.toString('utf8');
   }
 
   /**
    * Masks sensitive data for logging
    */
-  maskSensitiveData(data: string, type: 'account' | 'routing' | 'name' | 'iban'): string {
+  maskSensitiveData(
+    data: string,
+    type: 'account' | 'routing' | 'name' | 'iban',
+  ): string {
     switch (type) {
       case 'account':
         return data.length >= 4 ? `****${data.slice(-4)}` : '****';
       case 'routing':
-        return data.length >= 4 ? `${data.slice(0, 4)}****${data.slice(-1)}` : '****';
+        return data.length >= 4
+          ? `${data.slice(0, 4)}****${data.slice(-1)}`
+          : '****';
       case 'name':
         if (data.length <= 2) return '**';
         return `${data.slice(0, 1)}${'*'.repeat(data.length - 2)}${data.slice(-1)}`;
       case 'iban':
-        return data.length >= 8 ? `${data.slice(0, 4)}****${data.slice(-4)}` : '****';
+        return data.length >= 8
+          ? `${data.slice(0, 4)}****${data.slice(-4)}`
+          : '****';
       default:
         return '****';
     }
@@ -77,13 +95,15 @@ export class CryptoService {
     if (!key) {
       throw new Error('ENCRYPTION_KEY environment variable is required');
     }
-    
+
     // For now, use the key directly. In production, this should use KMS
     const keyBuffer = Buffer.from(key, 'base64');
     if (keyBuffer.length !== this.keyLength) {
-      throw new Error(`ENCRYPTION_KEY must be ${this.keyLength} bytes (base64 encoded)`);
+      throw new Error(
+        `ENCRYPTION_KEY must be ${this.keyLength} bytes (base64 encoded)`,
+      );
     }
-    
+
     return keyBuffer;
   }
 }
