@@ -26,7 +26,11 @@ export class AdminBankController {
 
   @Post('users/:id/banks/ach')
   @Roles('ADMIN', 'ACCOUNTANT')
-  @Audit({ action: 'BANK_ACCOUNT_ADD', resourceType: 'bank_account', resourceIdParam: 'id' })
+  @Audit({
+    action: 'BANK_ACCOUNT_ADD',
+    resourceType: 'bank_account',
+    resourceIdParam: 'id',
+  })
   async addAchBankAccountForUser(
     @CurrentUser() user: any,
     @Param('id') userId: number,
@@ -44,8 +48,9 @@ export class AdminBankController {
     return this.bankService.getBankAccounts(userId);
   }
 
-  @Get('banks')
+  @Get()
   @Roles('ADMIN')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   async getAllBankAccounts(
     @CurrentUser() user: any,
     @Query('page') page = 1,
@@ -57,10 +62,13 @@ export class AdminBankController {
     page: number;
     size: number;
   }> {
-    return this.bankService.getAllBankAccounts({
+    // For admin, get all accounts across all users
+    const accounts = await this.bankService.getAllBankAccountsForAdmin();
+    return {
+      data: accounts,
+      total: accounts.length,
       page: Number(page),
       size: Number(size),
-      status,
-    });
+    };
   }
 }

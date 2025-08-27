@@ -110,6 +110,15 @@ export class BankService {
   }
 
   /**
+   * Get all bank accounts for admin view
+   */
+  async getAllBankAccountsForAdmin(): Promise<BankAccountView[]> {
+    // Get all accounts across all users for admin view
+    const accounts = await this.bankAccountRepository.findAll();
+    return accounts.map((account) => this.toBankAccountView(account));
+  }
+
+  /**
    * Creates Unit counterparty (mock implementation)
    */
   private async createUnitCounterparty(dto: AddAchBankDto): Promise<string> {

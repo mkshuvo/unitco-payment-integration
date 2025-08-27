@@ -8,7 +8,7 @@
 const https = require('https');
 const http = require('http');
 
-const API_BASE = 'http://localhost:41873';
+const API_BASE = 'http://localhost:56482';
 
 // Valid Chase routing number for testing
 const testData = {
@@ -43,8 +43,8 @@ async function testHealth() {
   }
 }
 
-async function testBankApi() {
-  console.log('\nTesting bank API endpoint...');
+async function testSecurityWithoutAuth() {
+  console.log('\n🔒 Testing security without authentication...');
   
   try {
     const response = await fetch(`${API_BASE}/providers/me/bank-accounts/ach`, {
@@ -55,26 +55,69 @@ async function testBankApi() {
       body: JSON.stringify(testData),
     });
 
-    if (response.ok) {
-      const data = await response.json();
-      console.log('✅ Bank API test passed');
-      console.log('Response:', {
-        accountId: data.accountId,
-        bankName: data.bankName,
-        mask: data.mask,
-        method: data.method,
-        unitCounterpartyStatus: data.unitCounterpartyStatus,
-      });
+    if (response.status === 401) {
+      console.log('✅ Security working - Protected endpoint blocked without auth');
       return true;
     } else {
-      const errorData = await response.json().catch(() => ({}));
-      console.log('❌ Bank API test failed:', response.status, errorData);
+      console.log('❌ Security FAILED - Protected endpoint accessible without auth:', response.status);
       return false;
     }
   } catch (error) {
-    console.log('❌ Bank API test failed:', error.message);
+    console.log('❌ Security test failed:', error.message);
     return false;
   }
+}
+
+async function testPublicEndpoints() {
+  console.log('\n🌐 Testing public endpoints...');
+  
+  try {
+    // Test health endpoint (should be accessible)
+    const healthResponse = await fetch(`${API_BASE}/health`);
+    const healthOk = healthResponse.ok;
+    console.log(`${healthOk ? '✅' : '❌'} Health endpoint: ${healthOk ? 'ACCESSIBLE' : 'BLOCKED'} (${healthResponse.status})`);
+    
+    // Test root endpoint (should be accessible)
+    const rootResponse = await fetch(`${API_BASE}/`);
+    const rootOk = rootResponse.ok;
+    console.log(`${rootOk ? '✅' : '❌'} Root endpoint: ${rootOk ? 'ACCESSIBLE' : 'BLOCKED'} (${rootResponse.status})`);
+    
+    return healthOk && rootOk;
+  } catch (error) {
+    console.log('❌ Public endpoints test failed:', error.message);
+    return false;
+  }
+}
+
+async function testProtectedEndpoints() {
+  console.log('\n🛡️  Testing protected endpoints without auth...');
+  
+  const endpoints = [
+    { path: '/auth/me', method: 'GET' },
+    { path: '/providers/me/bank-accounts', method: 'GET' },
+    { path: '/integration/unit/status', method: 'GET' },
+    { path: '/api/keys', method: 'GET' }
+  ];
+  
+  let allBlocked = true;
+  
+  for (const endpoint of endpoints) {
+    try {
+      const response = await fetch(`${API_BASE}${endpoint.path}`, {
+        method: endpoint.method
+      });
+      
+      const isBlocked = response.status === 401;
+      console.log(`${isBlocked ? '✅' : '❌'} ${endpoint.method} ${endpoint.path}: ${isBlocked ? 'BLOCKED' : 'ACCESSIBLE'} (${response.status})`);
+      
+      if (!isBlocked) allBlocked = false;
+    } catch (error) {
+      console.log(`❌ Error testing ${endpoint.path}:`, error.message);
+      allBlocked = false;
+    }
+  }
+  
+  return allBlocked;
 }
 
 async function testInvalidRouting() {
@@ -105,7 +148,8 @@ async function testInvalidRouting() {
 }
 
 async function main() {
-  console.log('🧪 Testing UnitCo Payment Integration API\n');
+  console.log('🛡️  SECURITY END-TO-END TESTING\n');
+  console.log('=====================================\n');
   
   const healthOk = await testHealth();
   if (!healthOk) {
@@ -113,13 +157,29 @@ async function main() {
     process.exit(1);
   }
   
-  const bankOk = await testBankApi();
-  const validationOk = await testInvalidRouting();
+  const publicOk = await testPublicEndpoints();
+  const protectedOk = await testProtectedEndpoints();
+  const securityOk = await testSecurityWithoutAuth();
   
-  if (bankOk && validationOk) {
-    console.log('\n🎉 All tests passed!');
+  console.log('\n📊 SECURITY TEST RESULTS');
+  console.log('=========================');
+  console.log(`${publicOk ? '✅' : '❌'} Public Endpoints: ${publicOk ? 'PASS' : 'FAIL'}`);
+  console.log(`${protectedOk ? '✅' : '❌'} Protected Endpoints: ${protectedOk ? 'PASS' : 'FAIL'}`);
+  console.log(`${securityOk ? '✅' : '❌'} Authentication Required: ${securityOk ? 'PASS' : 'FAIL'}`);
+  
+  const allPassed = publicOk && protectedOk && securityOk;
+  
+  console.log('\n🎯 OVERALL SECURITY STATUS');
+  console.log('===========================');
+  console.log(`${allPassed ? '🟢 SECURITY IMPLEMENTATION: SUCCESSFUL' : '🔴 SECURITY IMPLEMENTATION: NEEDS ATTENTION'}`);
+  
+  if (allPassed) {
+    console.log('\n✅ All security measures are working correctly!');
+    console.log('   - Public endpoints accessible');
+    console.log('   - Protected endpoints require authentication');
+    console.log('   - Global JWT guard is active');
   } else {
-    console.log('\n❌ Some tests failed');
+    console.log('\n⚠️  Some security tests failed. Review the results above.');
     process.exit(1);
   }
 }

@@ -8,10 +8,17 @@ import {
   Typography,
   Card,
   CardContent,
+  CardActions,
   Button,
   Grid,
   Alert,
 } from '@mui/material';
+import {
+  AccountBalance as AccountBalanceIcon,
+  Payment as PaymentIcon,
+  AdminPanelSettings as AdminIcon,
+} from '@mui/icons-material';
+import Link from 'next/link';
 import { getCurrentUser, logout, hasRole, User } from '../../lib/auth';
 
 export default function DashboardPage() {
@@ -95,70 +102,108 @@ export default function DashboardPage() {
         </Card>
 
         <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 3 }}>
-          <Card>
-            <CardContent>
+          <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <CardContent sx={{ flexGrow: 1 }}>
+              <AccountBalanceIcon sx={{ fontSize: 40, color: 'primary.main', mb: 2 }} />
               <Typography variant="h6" gutterBottom>
                 Banking
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Manage your bank accounts and view transactions
+              <Typography variant="body2" color="text.secondary">
+                Manage bank accounts and view Unit white-label banking interface
               </Typography>
-              <Button 
-                variant="contained" 
-                href="/banking"
-                disabled={!hasRole(user, 'USER') && !hasRole(user, 'ADMIN')}
-              >
-                View Banking
-              </Button>
             </CardContent>
+            <CardActions>
+              <Button
+                size="small"
+                component={Link}
+                href="/banking"
+                sx={{ ml: 'auto' }}
+              >
+                Open Banking
+              </Button>
+            </CardActions>
           </Card>
 
-          <Card>
-            <CardContent>
+          <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <CardContent sx={{ flexGrow: 1 }}>
+              <PaymentIcon sx={{ fontSize: 40, color: 'success.main', mb: 2 }} />
               <Typography variant="h6" gutterBottom>
-                Customer Tokens
+                Payments
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Generate and manage Unit customer tokens
+              <Typography variant="body2" color="text.secondary">
+                Send payments, view transaction history, and manage payment recipients
               </Typography>
-              <Button 
-                variant="contained" 
-                href="/banking/customer-token"
-              >
-                Manage Tokens
-              </Button>
             </CardContent>
+            <CardActions>
+              <Button
+                size="small"
+                component={Link}
+                href="/payments"
+                sx={{ ml: 'auto' }}
+              >
+                View Payments
+              </Button>
+            </CardActions>
+          </Card>
+
+          <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <CardContent sx={{ flexGrow: 1 }}>
+              <AdminIcon sx={{ fontSize: 40, color: 'info.main', mb: 2 }} />
+              <Typography variant="h6" gutterBottom>
+                Unit Onboarding
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Complete your Unit account application for banking services
+              </Typography>
+            </CardContent>
+            <CardActions>
+              <Button
+                size="small"
+                component={Link}
+                href="/onboarding/unit-application"
+                sx={{ ml: 'auto' }}
+              >
+                Start Application
+              </Button>
+            </CardActions>
           </Card>
 
           {hasRole(user, 'ADMIN') && (
-            <Card>
-              <CardContent>
+            <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <CardContent sx={{ flexGrow: 1 }}>
+                <AdminIcon sx={{ fontSize: 40, color: 'warning.main', mb: 2 }} />
                 <Typography variant="h6" gutterBottom>
                   Admin Panel
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  Manage users, roles, and system settings
+                <Typography variant="body2" color="text.secondary">
+                  Manage users, roles, banking accounts, and system settings
                 </Typography>
-                <Button variant="contained" href="/admin">
-                  Admin Panel
-                </Button>
               </CardContent>
-            </Card>
-          )}
-
-          {(hasRole(user, 'ADMIN') || hasRole(user, 'ACCOUNTANT')) && (
-            <Card>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
+              <CardActions>
+                <Button
+                  size="small"
+                  component={Link}
+                  href="/admin/users"
+                  sx={{ mr: 1 }}
+                >
+                  Users
+                </Button>
+                <Button
+                  size="small"
+                  component={Link}
+                  href="/admin/banking"
+                  sx={{ mr: 1 }}
+                >
+                  Banking
+                </Button>
+                <Button
+                  size="small"
+                  component={Link}
+                  href="/admin/payments"
+                >
                   Payments
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  Create and manage payments
-                </Typography>
-                <Button variant="contained" href="/payments">
-                  Manage Payments
                 </Button>
-              </CardContent>
+              </CardActions>
             </Card>
           )}
         </Box>

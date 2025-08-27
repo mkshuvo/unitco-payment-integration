@@ -180,6 +180,16 @@ export class BankAccountRepository {
   }
 
   /**
+   * Find all bank accounts for admin
+   */
+  async findAll(): Promise<BankAccount[]> {
+    return await this.bankAccountRepository.find({
+      relations: ['branch', 'user'],
+      order: { created_time: 'DESC' },
+    });
+  }
+
+  /**
    * Unset other primary accounts for a user
    */
   private async unsetOtherPrimaryAccounts(userId: number): Promise<void> {

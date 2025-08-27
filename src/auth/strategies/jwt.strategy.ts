@@ -21,7 +21,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     @InjectRepository(User) private readonly users: Repository<User>,
     @InjectRepository(Role) private readonly roles: Repository<Role>,
-    @InjectRepository(UserRole) private readonly userRoles: Repository<UserRole>,
+    @InjectRepository(UserRole)
+    private readonly userRoles: Repository<UserRole>,
     private readonly config: ConfigService,
   ) {
     super({

@@ -8,7 +8,7 @@ services:
       MYSQL_USER: ${MYSQL_USER:-unitco}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-unitco}
     ports:
-      - "52719:3306" # random high port to avoid conflicts
+      - "53306:3306" # random high port to avoid conflicts
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:

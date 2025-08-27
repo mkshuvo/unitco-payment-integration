@@ -8,6 +8,8 @@ import {
   BadRequestException,
   HttpCode,
   HttpStatus,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { UnitService } from './unit.service';
 import { ResolveCustomerDto } from './dto/resolve-customer.dto';
@@ -16,8 +18,16 @@ import { CreateTokenVerificationDto } from './dto/create-token-verification.dto'
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { AuditInterceptor } from '../audit/interceptors/audit.interceptor';
+import { Audit } from '../audit/decorators/audit.decorator';
 
 @Controller('integration/unit')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@UseInterceptors(AuditInterceptor)
 export class IntegrationController {
   constructor(
     private readonly unit: UnitService,
@@ -25,12 +35,16 @@ export class IntegrationController {
   ) {}
 
   @Get('status')
-  async status() {
+  @Roles('USER', 'ADMIN', 'ACCOUNTANT')
+  @Audit({ action: 'UNIT_STATUS_CHECK', resourceType: 'integration' })
+  async status(@CurrentUser() user: User) {
     return this.unit.checkStatus();
   }
 
   @Post('application-forms')
-  async createApplicationForm(@Body() body?: any) {
+  @Roles('USER', 'ADMIN', 'ACCOUNTANT')
+  @Audit({ action: 'APPLICATION_FORM_CREATE', resourceType: 'integration' })
+  async createApplicationForm(@CurrentUser() user: User, @Body() body?: any) {
     try {
       const { tags, whiteLabelThemeId } = body || {};
       return await this.unit.createApplicationForm({ tags, whiteLabelThemeId });
@@ -44,7 +58,12 @@ export class IntegrationController {
 
   @Post('customers/resolve')
   @HttpCode(HttpStatus.OK)
-  async resolveCustomer(@Body() dto: ResolveCustomerDto) {
+  @Roles('USER', 'ADMIN', 'ACCOUNTANT')
+  @Audit({ action: 'CUSTOMER_RESOLVE', resourceType: 'user' })
+  async resolveCustomer(
+    @CurrentUser() user: User,
+    @Body() dto: ResolveCustomerDto,
+  ) {
     const customerId = await this.unit.resolveCustomerIdByEmail(dto.email);
     let persisted = false;
     if (customerId && dto.userId) {
@@ -57,7 +76,9 @@ export class IntegrationController {
         where: { unit_customer_id: customerId },
       });
       if (existing && existing.id !== user.id) {
-        throw new BadRequestException('Unit customer already linked to another user');
+        throw new BadRequestException(
+          'Unit customer already linked to another user',
+        );
       }
       user.unit_customer_id = customerId;
       await this.users.save(user);
@@ -68,7 +89,10 @@ export class IntegrationController {
 
   @Post('customers/:id/token/verification')
   @HttpCode(HttpStatus.CREATED)
+  @Roles('USER', 'ADMIN', 'ACCOUNTANT')
+  @Audit({ action: 'CUSTOMER_TOKEN_CREATE', resourceType: 'customer_token' })
   async createCustomerTokenVerification(
+    @CurrentUser() user: User,
     @Param('id') id: string,
     @Body() dto: CreateTokenVerificationDto,
   ) {
@@ -83,7 +107,10 @@ export class IntegrationController {
 
   @Post('customers/:id/token')
   @HttpCode(HttpStatus.CREATED)
+  @Roles('USER', 'ADMIN', 'ACCOUNTANT')
+  @Audit({ action: 'CUSTOMER_TOKEN_CREATE', resourceType: 'customer_token' })
   async createCustomerToken(
+    @CurrentUser() user: User,
     @Param('id') id: string,
     @Body() dto: CreateCustomerTokenDto,
   ) {

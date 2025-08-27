@@ -1,4 +1,9 @@
-import { ExceptionFilter, Catch, ArgumentsHost, ForbiddenException } from '@nestjs/common';
+import {
+  ExceptionFilter,
+  Catch,
+  ArgumentsHost,
+  ForbiddenException,
+} from '@nestjs/common';
 import { Request, Response } from 'express';
 
 @Catch(ForbiddenException)

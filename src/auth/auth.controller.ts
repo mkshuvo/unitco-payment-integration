@@ -1,10 +1,23 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, Req, Res, Get, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Req,
+  Res,
+  Get,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
+import { Public } from './decorators/public.decorator';
+import { AuditInterceptor } from '../audit/interceptors/audit.interceptor';
 import { Audit } from '../audit/decorators/audit.decorator';
 import { User } from '../entities/user.entity';
 
@@ -13,6 +26,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
+  @Public()
   @HttpCode(HttpStatus.CREATED)
   async register(@Body() dto: RegisterDto) {
     const result = await this.authService.register(dto);
@@ -20,6 +34,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @Public()
   @HttpCode(HttpStatus.OK)
   async login(
     @Body() dto: LoginDto,
@@ -28,7 +43,7 @@ export class AuthController {
   ) {
     const userAgent = req.get('User-Agent');
     const ip = req.ip || req.connection.remoteAddress;
-    
+
     const result = await this.authService.login(dto, userAgent, ip);
 
     // Set httpOnly cookies
@@ -66,7 +81,7 @@ export class AuthController {
 
     const userAgent = req.get('User-Agent');
     const ip = req.ip || req.connection.remoteAddress;
-    
+
     const result = await this.authService.refresh(refreshToken, userAgent, ip);
 
     // Set new httpOnly cookies
@@ -99,16 +114,18 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ): Promise<{ message: string }> {
     await this.authService.revokeAllTokens(user.id);
-    
+
     response.clearCookie('access_token');
     response.clearCookie('refresh_token');
-    
+
     return { message: 'Logged out successfully' };
   }
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
-  async getCurrentUser(@CurrentUser() user: User & { roles: string[] }): Promise<{ id: number; email: string; roles: string[] }> {
+  async getCurrentUser(
+    @CurrentUser() user: User & { roles: string[] },
+  ): Promise<{ id: number; email: string; roles: string[] }> {
     return {
       id: user.id,
       email: user.email,

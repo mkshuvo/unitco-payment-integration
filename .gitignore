@@ -20,6 +20,20 @@ web/.next
 # Tests
 /coverage
 /.nyc_output
+test-results/
+**/test-results/
+**/playwright-report/
+
+# Playwright
+web/test-results/
+web/playwright-report/
+web/playwright/.cache/
+
+# Jest and other test outputs
+jest-out*.json
+jest-report.json
+jest-stderr.txt
+jest-stdout.txt
 
 # IDEs and editors
 /.idea

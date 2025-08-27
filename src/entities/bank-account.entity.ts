@@ -12,7 +12,10 @@ import { BankBranch } from './bank-branch.entity';
 
 @Entity('bank_account')
 @Index(['user_id'])
-@Index(['unit_counterparty_id'], { unique: true, where: 'unit_counterparty_id IS NOT NULL' })
+@Index(['unit_counterparty_id'], {
+  unique: true,
+  where: 'unit_counterparty_id IS NOT NULL',
+})
 @Index(['user_id', 'is_primary'])
 export class BankAccount {
   @PrimaryGeneratedColumn()

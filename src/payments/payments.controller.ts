@@ -8,7 +8,11 @@ import {
   Query,
   UseInterceptors,
 } from '@nestjs/common';
-import { PaymentsService, CreatePaymentRequest, PaymentView } from './payments.service';
+import {
+  PaymentsService,
+  CreatePaymentRequest,
+  PaymentView,
+} from './payments.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -60,7 +64,11 @@ export class AdminPaymentsController {
 
   @Post()
   @Roles('ADMIN', 'ACCOUNTANT')
-  @Audit({ action: 'PAYMENT_CREATE', resourceType: 'payment', resourceIdParam: 'userId' })
+  @Audit({
+    action: 'PAYMENT_CREATE',
+    resourceType: 'payment',
+    resourceIdParam: 'userId',
+  })
   async createPaymentForUser(
     @CurrentUser() user: any,
     @Param('userId') userId: number,

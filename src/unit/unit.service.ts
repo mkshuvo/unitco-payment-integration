@@ -43,7 +43,7 @@ export class UnitService {
   constructor(private readonly config: ConfigService) {
     const apiKey = this.config.get('UNIT_API_KEY');
     const baseUrl = this.config.get('UNIT_BASE_URL') || 'https://api.s.unit.sh';
-    
+
     if (!apiKey) {
       throw new Error('UNIT_API_KEY environment variable is required');
     }
@@ -71,8 +71,9 @@ export class UnitService {
         },
       };
 
-      const response = await this.unitApi.counterparties.create(counterpartyData);
-      
+      const response =
+        await this.unitApi.counterparties.create(counterpartyData);
+
       this.logger.log(`Unit counterparty created: ${response.data.id}`);
       return response.data;
     } catch (error) {
@@ -86,7 +87,10 @@ export class UnitService {
       const response = await this.unitApi.counterparties.get(counterpartyId);
       return response.data;
     } catch (error) {
-      this.logger.error(`Failed to get Unit counterparty ${counterpartyId}`, error);
+      this.logger.error(
+        `Failed to get Unit counterparty ${counterpartyId}`,
+        error,
+      );
       throw new Error(`Unit counterparty retrieval failed: ${error.message}`);
     }
   }
@@ -137,16 +141,18 @@ export class UnitService {
     }
   }
 
-  async listPayments(options: {
-    accountId?: string;
-    customerId?: string;
-    status?: string;
-    limit?: number;
-    offset?: number;
-  } = {}): Promise<any> {
+  async listPayments(
+    options: {
+      accountId?: string;
+      customerId?: string;
+      status?: string;
+      limit?: number;
+      offset?: number;
+    } = {},
+  ): Promise<any> {
     try {
       const params: any = {};
-      
+
       if (options.accountId) params['filter[accountId]'] = options.accountId;
       if (options.customerId) params['filter[customerId]'] = options.customerId;
       if (options.status) params['filter[status]'] = options.status;
@@ -170,7 +176,7 @@ export class UnitService {
 
       // Checksum validation using the standard algorithm
       const digits = routingNumber.split('').map(Number);
-      const checksum = 
+      const checksum =
         3 * (digits[0] + digits[3] + digits[6]) +
         7 * (digits[1] + digits[4] + digits[7]) +
         1 * (digits[2] + digits[5] + digits[8]);
@@ -191,7 +197,10 @@ export class UnitService {
         currency: 'USD',
       };
     } catch (error) {
-      this.logger.error(`Failed to get account balance for ${accountId}`, error);
+      this.logger.error(
+        `Failed to get account balance for ${accountId}`,
+        error,
+      );
       throw new Error(`Account balance retrieval failed: ${error.message}`);
     }
   }

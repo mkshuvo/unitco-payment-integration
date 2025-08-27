@@ -6,16 +6,21 @@ import {
   Index,
 } from 'typeorm';
 
-export type AuditAction = 
-  | 'USER_LOGIN' 
-  | 'USER_LOGOUT' 
+export type AuditAction =
+  | 'USER_LOGIN'
+  | 'USER_LOGOUT'
   | 'USER_REGISTER'
+  | 'USER_UPDATE'
   | 'BANK_ACCOUNT_ADD'
   | 'BANK_ACCOUNT_UPDATE'
   | 'PAYMENT_CREATE'
   | 'PAYMENT_APPROVE'
   | 'ROLE_ASSIGN'
-  | 'ROLE_REVOKE';
+  | 'ROLE_REVOKE'
+  | 'UNIT_STATUS_CHECK'
+  | 'APPLICATION_FORM_CREATE'
+  | 'CUSTOMER_RESOLVE'
+  | 'CUSTOMER_TOKEN_CREATE';
 
 @Entity('audit_logs')
 @Index(['user_id', 'created_time'])
@@ -27,17 +32,25 @@ export class AuditLog {
   @Column({ type: 'int', unsigned: true, nullable: true })
   user_id?: number | null;
 
-  @Column({ type: 'enum', enum: [
-    'USER_LOGIN',
-    'USER_LOGOUT', 
-    'USER_REGISTER',
-    'BANK_ACCOUNT_ADD',
-    'BANK_ACCOUNT_UPDATE',
-    'PAYMENT_CREATE',
-    'PAYMENT_APPROVE',
-    'ROLE_ASSIGN',
-    'ROLE_REVOKE'
-  ]})
+  @Column({
+    type: 'enum',
+    enum: [
+      'USER_LOGIN',
+      'USER_LOGOUT',
+      'USER_REGISTER',
+      'USER_UPDATE',
+      'BANK_ACCOUNT_ADD',
+      'BANK_ACCOUNT_UPDATE',
+      'PAYMENT_CREATE',
+      'PAYMENT_APPROVE',
+      'ROLE_ASSIGN',
+      'ROLE_REVOKE',
+      'UNIT_STATUS_CHECK',
+      'APPLICATION_FORM_CREATE',
+      'CUSTOMER_RESOLVE',
+      'CUSTOMER_TOKEN_CREATE',
+    ],
+  })
   action: AuditAction;
 
   @Column({ type: 'varchar', length: 100, nullable: true })

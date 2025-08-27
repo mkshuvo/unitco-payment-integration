@@ -43,32 +43,32 @@ export class PaymentsService {
     const maxAmount = Number(this.config.get('PAYMENT_LIMIT_SINGLE') || 10000);
     if (data.amount <= 0 || data.amount > maxAmount) {
       throw new BadRequestException(
-        `Payment amount must be between $0.01 and $${maxAmount}`
+        `Payment amount must be between $0.01 and $${maxAmount}`,
       );
     }
 
     // Get bank account (primary if not specified)
-    let bankAccount: BankAccount;
+    let bankAccount: BankAccount | null;
     if (data.bankAccountId) {
       bankAccount = await this.bankAccounts.findOne({
-        where: { 
-          account_id: data.bankAccountId, 
+        where: {
+          account_id: data.bankAccountId,
           user_id: userId,
-          status: 'ACTIVE'
+          status: 'ACTIVE',
         },
       });
     } else {
       bankAccount = await this.bankAccounts.findOne({
-        where: { 
-          user_id: userId, 
+        where: {
+          user_id: userId,
           is_primary: 1,
-          status: 'ACTIVE'
+          status: 'ACTIVE',
         },
       });
     }
 
     if (!bankAccount) {
-      throw new BadRequestException('No active bank account found');
+      throw new BadRequestException('Bank account not found');
     }
 
     if (bankAccount.unit_counterparty_status !== 'ACTIVE') {
@@ -81,7 +81,7 @@ export class PaymentsService {
     try {
       // Create Unit ACH credit payment
       const unitPayment = await this.unitService.createAchCredit({
-        accountId: this.config.get('UNIT_ACCOUNT_ID'), // Your Unit account ID
+        accountId: this.config.get('UNIT_ACCOUNT_ID') || 'default-account-id', // Your Unit account ID
         counterpartyId: bankAccount.unit_counterparty_id!,
         amount: data.amount,
         description: `Payment to ${bankAccount.encrypted_account_holder_name}`,
@@ -107,20 +107,26 @@ export class PaymentsService {
     }
   }
 
-  async getPayments(userId: number, options: {
-    limit?: number;
-    offset?: number;
-  } = {}): Promise<PaymentView[]> {
+  async getPayments(
+    userId: number,
+    options: {
+      limit?: number;
+      offset?: number;
+    } = {},
+  ): Promise<PaymentView[]> {
     // This would typically query a payments table
     // For now, we'll return an empty array as the payment tracking
     // would be implemented with the pay_accounting_payment table
     return [];
   }
 
-  async getPayment(userId: number, paymentId: string): Promise<PaymentView | null> {
+  async getPayment(
+    userId: number,
+    paymentId: string,
+  ): Promise<PaymentView | null> {
     try {
       const unitPayment = await this.unitService.getPayment(paymentId);
-      
+
       return {
         id: paymentId,
         amount: unitPayment.attributes.amount / 100, // Convert from cents

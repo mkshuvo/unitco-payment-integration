@@ -255,3 +255,308 @@ export async function createUnitCustomerToken(
   }
   return res.json();
 }
+
+// ===== Admin API Functions =====
+
+export interface AdminBankAccountView extends BankAccountView {
+  userId: number;
+  userEmail: string;
+  userFullName?: string;
+}
+
+export interface AdminBankAccountsResponse {
+  data: AdminBankAccountView[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export async function getAdminBankAccounts(params: {
+  page?: number;
+  limit?: number;
+  search?: string;
+}): Promise<AdminBankAccountsResponse> {
+  const searchParams = new URLSearchParams();
+  if (params.page) searchParams.set('page', params.page.toString());
+  if (params.limit) searchParams.set('limit', params.limit.toString());
+  if (params.search) searchParams.set('search', params.search);
+
+  const url = `${API_BASE_URL}/admin/bank-accounts?${searchParams.toString()}`;
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+export interface AdminUserView {
+  id: number;
+  email: string;
+  fullName?: string;
+  isActive: boolean;
+  roles: string[];
+  createdAt: string;
+  lastLoginAt?: string;
+}
+
+export interface AdminUsersResponse {
+  data: AdminUserView[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export async function getAdminUsers(params: {
+  page?: number;
+  limit?: number;
+  search?: string;
+}): Promise<AdminUsersResponse> {
+  const searchParams = new URLSearchParams();
+  if (params.page) searchParams.set('page', params.page.toString());
+  if (params.limit) searchParams.set('limit', params.limit.toString());
+  if (params.search) searchParams.set('search', params.search);
+
+  const url = `${API_BASE_URL}/admin/users?${searchParams.toString()}`;
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+export interface UpdateUserRoleRequest {
+  userId: number;
+  roles: string[];
+}
+
+export async function updateUserRoles(data: UpdateUserRoleRequest): Promise<{ success: boolean }> {
+  const url = `${API_BASE_URL}/admin/users/${data.userId}/roles`;
+  const response = await fetch(url, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ roles: data.roles }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+// ===== Bank Account Management =====
+
+export async function setPrimaryBankAccount(accountId: number): Promise<{ success: boolean }> {
+  const url = `${API_BASE_URL}/providers/me/bank-accounts/${accountId}/primary`;
+  const response = await fetch(url, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+export async function deactivateBankAccount(accountId: number): Promise<{ success: boolean }> {
+  const url = `${API_BASE_URL}/providers/me/bank-accounts/${accountId}`;
+  const response = await fetch(url, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+// ===== Payment Management =====
+
+export interface CreatePaymentRequest {
+  amount: number;
+  description: string;
+  recipientAccountId?: number;
+  recipientEmail?: string;
+  recipientName?: string;
+  recipientRoutingNumber?: string;
+  recipientAccountNumber?: string;
+  sameDay?: boolean;
+}
+
+export interface PaymentView {
+  id: number;
+  amount: number;
+  description: string;
+  status: 'PENDING' | 'PROCESSING' | 'SENT' | 'RETURNED' | 'REJECTED';
+  direction: 'CREDIT' | 'DEBIT';
+  recipientName?: string;
+  recipientEmail?: string;
+  createdAt: string;
+  processedAt?: string;
+  unitPaymentId?: string;
+  unitStatus?: string;
+}
+
+export interface PaymentsResponse {
+  data: PaymentView[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export async function createPayment(data: CreatePaymentRequest): Promise<PaymentView> {
+  const url = `${API_BASE_URL}/payments`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+export async function getPayments(params: {
+  page?: number;
+  limit?: number;
+  status?: string;
+}): Promise<PaymentsResponse> {
+  const searchParams = new URLSearchParams();
+  if (params.page) searchParams.set('page', params.page.toString());
+  if (params.limit) searchParams.set('limit', params.limit.toString());
+  if (params.status) searchParams.set('status', params.status);
+
+  const url = `${API_BASE_URL}/payments?${searchParams.toString()}`;
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+export async function getPaymentById(paymentId: number): Promise<PaymentView> {
+  const url = `${API_BASE_URL}/payments/${paymentId}`;
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+// ===== Admin Payment Management =====
+
+export interface AdminPaymentView extends PaymentView {
+  userId: number;
+  userEmail: string;
+  userFullName?: string;
+}
+
+export interface AdminPaymentsResponse {
+  data: AdminPaymentView[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export async function getAdminPayments(params: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: string;
+}): Promise<AdminPaymentsResponse> {
+  const searchParams = new URLSearchParams();
+  if (params.page) searchParams.set('page', params.page.toString());
+  if (params.limit) searchParams.set('limit', params.limit.toString());
+  if (params.search) searchParams.set('search', params.search);
+  if (params.status) searchParams.set('status', params.status);
+
+  const url = `${API_BASE_URL}/admin/payments?${searchParams.toString()}`;
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+export async function approvePayment(paymentId: number): Promise<{ success: boolean }> {
+  const url = `${API_BASE_URL}/admin/payments/${paymentId}/approve`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+export async function rejectPayment(paymentId: number, reason?: string): Promise<{ success: boolean }> {
+  const url = `${API_BASE_URL}/admin/payments/${paymentId}/reject`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ reason }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+  }
+
+  return response.json();
+}

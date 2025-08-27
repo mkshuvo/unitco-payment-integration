@@ -3,20 +3,16 @@ export {};
 declare global {
   namespace JSX {
     interface IntrinsicElements {
-      'unit-elements-white-label-app': {
+      'unit-elements-white-label-app': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
         'jwt-token'?: string;
-        'customer-token'?: string;
         theme?: string;
         language?: string;
-        [key: string]: any;
       };
-      'unit-elements-application-form': {
-        'application-form-id': string;
+      'unit-elements-application-form': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
+        'application-form-id'?: string;
         'application-form-token'?: string;
-        'jwt-token'?: string; // alternative auth path
         theme?: string;
         language?: string;
-        [key: string]: any;
       };
     }
   }

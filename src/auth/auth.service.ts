@@ -1,4 +1,9 @@
-import { ConflictException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
@@ -17,8 +22,10 @@ export class AuthService {
   constructor(
     @InjectRepository(User) private readonly users: Repository<User>,
     @InjectRepository(Role) private readonly roles: Repository<Role>,
-    @InjectRepository(UserRole) private readonly userRoles: Repository<UserRole>,
-    @InjectRepository(UserToken) private readonly userTokens: Repository<UserToken>,
+    @InjectRepository(UserRole)
+    private readonly userRoles: Repository<UserRole>,
+    @InjectRepository(UserToken)
+    private readonly userTokens: Repository<UserToken>,
     private readonly config: ConfigService,
     private readonly jwtService: JwtService,
   ) {}
@@ -56,7 +63,11 @@ export class AuthService {
     let role = await this.roles.findOne({ where: { name: 'USER' } });
     if (!role) {
       role = await this.roles.save(
-        this.roles.create({ name: 'USER', description: 'Standard user', is_system: 1 as any }),
+        this.roles.create({
+          name: 'USER',
+          description: 'Standard user',
+          is_system: 1 as any,
+        }),
       );
     }
     const ur = this.userRoles.create({ user_id: saved.id, role_id: role.id });
@@ -71,7 +82,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const isValidPassword = await argon2.verify(user.password_hash, dto.password);
+    const isValidPassword = await argon2.verify(
+      user.password_hash,
+      dto.password,
+    );
     if (!isValidPassword) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -93,7 +107,10 @@ export class AuthService {
     });
 
     const refreshToken = crypto.randomBytes(32).toString('hex');
-    const refreshTokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
+    const refreshTokenHash = crypto
+      .createHash('sha256')
+      .update(refreshToken)
+      .digest('hex');
 
     // Store refresh token
     const tokenEntity = this.userTokens.create({
@@ -117,8 +134,11 @@ export class AuthService {
   }
 
   async refresh(refreshToken: string, userAgent?: string, ip?: string) {
-    const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
-    
+    const tokenHash = crypto
+      .createHash('sha256')
+      .update(refreshToken)
+      .digest('hex');
+
     const tokenEntity = await this.userTokens.findOne({
       where: {
         token_hash: tokenHash,
@@ -127,7 +147,11 @@ export class AuthService {
       },
     });
 
-    if (!tokenEntity || !tokenEntity.expires_time || tokenEntity.expires_time < new Date()) {
+    if (
+      !tokenEntity ||
+      !tokenEntity.expires_time ||
+      tokenEntity.expires_time < new Date()
+    ) {
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
 
@@ -162,7 +186,10 @@ export class AuthService {
     });
 
     const newRefreshToken = crypto.randomBytes(32).toString('hex');
-    const newRefreshTokenHash = crypto.createHash('sha256').update(newRefreshToken).digest('hex');
+    const newRefreshTokenHash = crypto
+      .createHash('sha256')
+      .update(newRefreshToken)
+      .digest('hex');
 
     // Store new refresh token
     const newTokenEntity = this.userTokens.create({
@@ -183,11 +210,14 @@ export class AuthService {
   }
 
   async logout(refreshToken: string) {
-    const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
-    
+    const tokenHash = crypto
+      .createHash('sha256')
+      .update(refreshToken)
+      .digest('hex');
+
     await this.userTokens.update(
       { token_hash: tokenHash, type: 'REFRESH' },
-      { is_revoked: 1, revoked_time: new Date() }
+      { is_revoked: 1, revoked_time: new Date() },
     );
 
     return { success: true };
@@ -196,7 +226,7 @@ export class AuthService {
   async revokeAllTokens(userId: number) {
     await this.userTokens.update(
       { user_id: userId, type: 'REFRESH', is_revoked: 0 },
-      { is_revoked: 1, revoked_time: new Date() }
+      { is_revoked: 1, revoked_time: new Date() },
     );
 
     return { success: true };

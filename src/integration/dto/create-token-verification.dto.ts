@@ -1,4 +1,10 @@
-import { IsIn, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
+import {
+  IsIn,
+  IsObject,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 class PhoneDto {

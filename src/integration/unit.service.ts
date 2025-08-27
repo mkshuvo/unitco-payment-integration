@@ -341,13 +341,18 @@ export class UnitService {
             detail = `HTTP ${first.status} ${first.title}${first.code ? ` (${first.code})` : ''}`;
           }
         } catch {}
-        this.logger.error(`Unit createCustomerTokenVerification failed: ${detail}`);
+        this.logger.error(
+          `Unit createCustomerTokenVerification failed: ${detail}`,
+        );
         throw new Error('Failed to create customer token verification');
       }
       const json = await res.json();
-      const verificationToken: string | undefined = json?.data?.attributes?.verificationToken;
+      const verificationToken: string | undefined =
+        json?.data?.attributes?.verificationToken;
       if (!verificationToken) {
-        this.logger.error('Unit verification: missing verificationToken in response');
+        this.logger.error(
+          'Unit verification: missing verificationToken in response',
+        );
         throw new Error('Invalid verification response from Unit');
       }
       return { verificationToken };
@@ -444,7 +449,10 @@ export class UnitService {
         this.logger.error('Unit token: missing token in response');
         throw new Error('Invalid token response from Unit');
       }
-      return { token, expiresIn: typeof expiresIn === 'number' ? expiresIn : 86400 };
+      return {
+        token,
+        expiresIn: typeof expiresIn === 'number' ? expiresIn : 86400,
+      };
     } catch (err: any) {
       if (err?.name === 'AbortError') {
         this.logger.error('Unit createCustomerToken timeout after 5s');

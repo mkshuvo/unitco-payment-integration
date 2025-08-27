@@ -3,6 +3,7 @@
 import { CssBaseline } from "@mui/material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import type { ReactNode } from "react";
+import RouteGuard from "../components/RouteGuard";
 
 const theme = createTheme({
   palette: {
@@ -16,7 +17,9 @@ export default function Providers({ children }: { children: ReactNode }) {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      {children}
+      <RouteGuard>
+        {children}
+      </RouteGuard>
     </ThemeProvider>
   );
 }

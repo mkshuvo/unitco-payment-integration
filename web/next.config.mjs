@@ -11,7 +11,7 @@ const nextConfig = {
   // Silence workspace root inference warning when multiple lockfiles exist.
   outputFileTracingRoot: path.join(__dirname, '..'),
   experimental: {
-    optimizePackageImports: ["@mui/material", "@mui/icons-material", "@emotion/react", "@emotion/styled"],
+    optimizePackageImports: ["@mui/material", "@mui/icons-material"],
   },
   async rewrites() {
     const inDocker = !!process.env.DOCKER || process.env.NODE_ENV === 'production';

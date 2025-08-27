@@ -15,7 +15,7 @@ describe('IntegrationController', () => {
     usersRepo = { findOne: jest.fn(), save: jest.fn() };
     controller = new IntegrationController(
       unitService as UnitService,
-      usersRepo as any,
+      usersRepo,
     );
   });
 

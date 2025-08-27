@@ -36,7 +36,7 @@ export class AuditService {
 
   private sanitizeMetadata(metadata: Record<string, any>): Record<string, any> {
     const sanitized = { ...metadata };
-    
+
     // Remove sensitive fields
     const sensitiveFields = [
       'password',
@@ -53,7 +53,11 @@ export class AuditService {
     ];
 
     const redactValue = (obj: any, key: string): any => {
-      if (sensitiveFields.some(field => key.toLowerCase().includes(field.toLowerCase()))) {
+      if (
+        sensitiveFields.some((field) =>
+          key.toLowerCase().includes(field.toLowerCase()),
+        )
+      ) {
         return '[REDACTED]';
       }
       return obj[key];
@@ -81,13 +85,15 @@ export class AuditService {
     return redactObject(sanitized);
   }
 
-  async getAuditLogs(options: {
-    userId?: number;
-    action?: AuditAction;
-    resourceType?: string;
-    limit?: number;
-    offset?: number;
-  } = {}): Promise<AuditLog[]> {
+  async getAuditLogs(
+    options: {
+      userId?: number;
+      action?: AuditAction;
+      resourceType?: string;
+      limit?: number;
+      offset?: number;
+    } = {},
+  ): Promise<AuditLog[]> {
     const query = this.auditLogs.createQueryBuilder('audit');
 
     if (options.userId) {
@@ -99,7 +105,9 @@ export class AuditService {
     }
 
     if (options.resourceType) {
-      query.andWhere('audit.resource_type = :resourceType', { resourceType: options.resourceType });
+      query.andWhere('audit.resource_type = :resourceType', {
+        resourceType: options.resourceType,
+      });
     }
 
     query.orderBy('audit.created_time', 'DESC');

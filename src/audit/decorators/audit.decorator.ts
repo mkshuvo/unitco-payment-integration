@@ -9,4 +9,5 @@ export interface AuditMetadata {
   resourceIdParam?: string; // Parameter name to extract resource ID from
 }
 
-export const Audit = (metadata: AuditMetadata) => SetMetadata(AUDIT_KEY, metadata);
+export const Audit = (metadata: AuditMetadata) =>
+  SetMetadata(AUDIT_KEY, metadata);

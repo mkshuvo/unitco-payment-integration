@@ -140,7 +140,10 @@ export class PayoutService {
   /**
    * Submit payout batch to Unit API
    */
-  async submitPayoutBatch(batchId: number, userId: number): Promise<void> {
+  async submitPayoutBatch(
+    batchId: number,
+    userId: number,
+  ): Promise<PayoutBatchView> {
     this.logger.log(`Submitting payout batch ${batchId} for user ${userId}`);
 
     const batch = await this.payoutBatchRepository.findById(batchId);
@@ -180,6 +183,10 @@ export class PayoutService {
       this.logger.log(
         `Successfully submitted payout batch ${batchId} to Unit API`,
       );
+
+      // Get updated batch and return as view
+      const updatedBatch = await this.payoutBatchRepository.findById(batchId);
+      return this.toPayoutBatchView(updatedBatch);
     } catch (error) {
       // Update batch status to failed
       await this.payoutBatchRepository.updateStatus(batchId, 'FAILED', userId);
